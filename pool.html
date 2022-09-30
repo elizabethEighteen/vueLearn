@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const sleep = (delay) =>
+        new Promise((resolve) => setTimeout(resolve, delay));
+
+      const asyncFun = async (fun, curMax = 4, sum = 200) => {
+        let num = 0;
+        let curNum = 0;
+        console.time("总耗时");
+        console.log("beginTime:" + new Date().toLocaleString());
+        const result = [];
+        while (num !== sum) {
+          if (curNum <= curMax) {
+            result.push(
+              new Promise(async (resolve) => {
+                console.log(`Process Run 并发数:${curNum} 完成:${num}/${sum} `);
+                res = await fun();
+                curNum--;
+                resolve(res);
+              }).then(()=>{
+                // 时间统计不太行
+                console.log('then')
+              })
+            );
+            num++;
+            curNum++;
+          } else {
+            await sleep(10);
+          }
+        }
+        console.log(result);
+        console.log("endTime:" + new Date().toLocaleString());
+        console.log(new Date());
+        console.timeEnd("总耗时");
+      };
+
+      // 测试
+      const test = async () => {
+        const delay = (Math.random() * 1000).toFixed();
+        await sleep(delay);
+      };
+      setTimeout(() => asyncFun(test, 4, 20));
+
+      /**
+       *
+       */
+
+      /**
+       * 关键点
+       * 1. new promise 一经创建，立即执行
+       * 2. 使用 Promise.resolve().then 可以把任务加到微任务队列，防止立即执行迭代方法
+       * 3. 微任务处理过程中，产生的新的微任务，会在同一事件循环内，追加到微任务队列里
+       * 4. 使用 race 在某个任务完成时，继续添加任务，保持任务按照最大并发数进行执行
+       * 5. 任务完成后，需要从 doingTasks 中移出
+       */
+      function limit(count, array, iterateFunc) {
+        const tasks = [];
+        const doingTasks = [];
+        let i = 0;
+        const enqueue = () => {
+          // console.log("en");
+          if (i === array.length) {
+            return Promise.resolve();
+          }
+          const task = Promise.resolve().then(() => iterateFunc(array[i++]));
+          tasks.push(task);
+          const doing = task.then(() =>
+            doingTasks.splice(doingTasks.indexOf(doing), 1)
+          );
+          doingTasks.push(doing);
+          const res =
+            doingTasks.length >= count
+              ? Promise.race(doingTasks)
+              : Promise.resolve();
+          // console.log(res);
+          return res.then(enqueue);
+        };
+        return enqueue().then(() => {
+          // console.log("1");
+          return Promise.all(tasks);
+        });
+      }
+
+      // test
+      // const timeout = (i) =>
+      //   new Promise((resolve) => setTimeout(() => resolve(i), i));
+      // limit(2, [1000, 1000, 1000, 1000], timeout).then((res) => {
+      //   console.log(res);
+      // });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    #drag {
+        width: 200px;
+        height: 200px;
+        background-color: red;
+        position: absolute;
+        top: 0px;
+        left:0px
+    }
+</style>
+<body>
+
+    <div id="drag"></div>
+
+    <script>
+        let div = document.getElementById('drag')
+        let isDown = false;
+        let oX,oY,oLeft,oTop
+        div.addEventListener('mousedown',(e)=>{
+            isDown = true
+            oX = e.clientX
+            oY = e.clientY
+            oLeft = div.getBoundingClientRect().left
+            oTop = div.getBoundingClientRect().top
+        })
+        div.addEventListener('mousemove',(e)=>{
+            if(isDown) {
+                // console.log(e)
+                let y = e.clientY
+                let x = e.clientX
+                // console.log(oX,oY,x,y,oLeft,oTop)
+                let disx = x - oX 
+                let disy = y - oY 
+                div.style.left = disx+ oLeft+'px'
+                div.style.top = disy+ oTop+'px'
+                oX = x;
+                oY = y;
+                oLeft = disx+ oLeft
+                oTop = disy+ oTop
+
+            }
+        })
+        document.addEventListener('mouseup',()=>{
+            isDown = false
+        })
+    </script>
+    
+</body>
+</html>

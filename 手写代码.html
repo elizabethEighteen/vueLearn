@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /**
+       * new*/
+      const myNew = (Func, ...args) => {
+        const instance = {};
+        if (Func.prototype) {
+          Object.setPrototypeOf(instance, Func.prototype);
+        }
+        const res = Func.apply(instance, args);
+        if (
+          typeof res === "function" ||
+          (typeof res === "object" && res !== null)
+        ) {
+          return res;
+        }
+        return instance;
+      };
+
+      // 测试
+      //   function Person(name) {
+      //     this.name = name;
+      //   }
+      //   Person.prototype.sayName = function () {
+      //     console.log(`My name is ${this.name}`);
+      //   };
+      //   const me = myNew(Person, "Jack");
+      //   me.sayName();
+      //   console.log(me);
+
+      /**
+       * bind*/
+
+      Function.prototype.myBind = function (context = globalThis) {
+        const fn = this;
+        const args = Array.from(arguments).slice(1);
+        const newFunc = function () {
+          const newArgs = args.concat(...arguments);
+          console.log(this, this instanceof newFunc);
+          if (this instanceof newFunc) {
+            // 通过 new 调用，绑定 this 为实例对象
+            fn.apply(this, newArgs);
+          } else {
+            // 通过普通函数形式调用，绑定 context
+            fn.apply(context, newArgs);
+          }
+        };
+        // 支持 new 调用方式
+        newFunc.prototype = Object.create(fn.prototype);
+        return newFunc;
+      };
+
+      // 测试
+      //   const me = { name: "Jack" };
+      //   const other = { name: "Jackson" };
+      //   function say() {
+      //     console.log(`My name is ${this.name || "default"}`);
+      //   }
+      //   const meSay = say.myBind(me);
+      //   meSay();
+      //   const otherSay = say.myBind(other);
+      //   otherSay();
+
+      //   const A = function(name) {
+      //     this.name = name
+      //   }
+      //   let _A = A.myBind(undefined,'dd')
+      //   let a = new _A()
+      //   console.log(a)
+
+      /**
+       * deepCopy*/
+
+      const deepCopy = (obj, cache = new WeakMap()) => {
+        if (!obj instanceof Object) return;
+        if (cache.get(obj)) return cach.get(obj);
+        if (obj instanceof Function) {
+          return function () {
+            obj.apply(this, arguments);
+          };
+        }
+        if (obj instanceof Date) {
+          return new Date(obj);
+        }
+        if (obj instanceof RegExp) {
+          return new RegExp(obj.source, obj.flags);
+        }
+        const res = Array.isArray(obj) ? [] : {};
+        cache.set(obj, res);
+        Object.keys(obj).forEach((key) => {
+          if (obj[key] instanceof Object) {
+            res[key] = deepCopy(obj[key]);
+          } else {
+            res[key] = obj[key];
+          }
+        });
+        return res;
+      };
+
+      //测试
+    //   const source = {
+    //     name: "Jack",
+    //     meta: {
+    //       age: 12,
+    //       birth: new Date("1997-10-10"),
+    //       ary: [1, 2, { a: 1 }],
+    //       say() {
+    //         console.log("Hello");
+    //       },
+    //     },
+    //   };
+    //   const copySource = deepCopy(source)
+    //   console.log(copySource)
+    //   copySource.meta.say()
+
+    
+    </script>
+  </body>
+</html>

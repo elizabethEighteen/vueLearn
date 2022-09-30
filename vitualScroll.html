@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    #container {
+      width: 400px;
+      height: 600px;
+      margin: 200px auto;
+      border: 1px solid #ccc;
+    }
+    #list {
+      /* height: 1800px; */
+      height: 600px;
+    }
+    .item {
+      height: 30px;
+      line-height: 30px;
+      text-indent: 12px;
+    }
+  </style>
+  <body>
+    <div id="container">
+      <div id="list"></div>
+    </div>
+
+    <script>
+      let container = document.getElementById("container");
+      let list = document.getElementById("list");
+      let o = 0;
+      const renderList = (offset) => {
+        console.log(offset);
+        let offsetNum = -offset/30
+        list.innerHTML = ''
+        for (let i = offsetNum; i < 20+offsetNum; i++) {
+          let div = document.createElement("div");
+          div.setAttribute("class", "item");
+          div.innerHTML = `第${i + 1}条数据`;
+          list.appendChild(div);
+        }
+      };
+      renderList(o);
+
+      container.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        console.log(e.deltaY);
+        if (e.deltaY > 0) {
+          // up
+          o -= 30;
+        //   list.style.transform = `translateY(${o}px)`;
+          renderList(o);
+        } else {
+          if (o >= 0) return;
+          o += 30;
+        //   list.style.transform = `translateY(${o}px)`;
+          renderList(o);
+        }
+      });
+    </script>
+  </body>
+</html>
