@@ -47,7 +47,7 @@
         const delay = (Math.random() * 1000).toFixed();
         await sleep(delay);
       };
-      setTimeout(() => asyncFun(test, 4, 20));
+      // setTimeout(() => asyncFun(test, 4, 20));
 
       /**
        *
@@ -61,14 +61,19 @@
        * 4. 使用 race 在某个任务完成时，继续添加任务，保持任务按照最大并发数进行执行
        * 5. 任务完成后，需要从 doingTasks 中移出
        */
+      // race all
       function limit(count, array, iterateFunc) {
         const tasks = [];
         const doingTasks = [];
         let i = 0;
         const enqueue = () => {
-          // console.log("en");
+          console.log("en");
           if (i === array.length) {
-            return Promise.resolve();
+            // return Promise.resolve('44444').then(()=>{
+            //   console.log('555')
+            // });
+            // return
+            return Promise.resolve
           }
           const task = Promise.resolve().then(() => iterateFunc(array[i++]));
           tasks.push(task);
@@ -81,20 +86,26 @@
               ? Promise.race(doingTasks)
               : Promise.resolve();
           // console.log(res);
-          return res.then(enqueue);
+          return res.then(enqueue)
+          // return res.then( ()=>{
+          //   return new Promise((resolve)=>{
+          //     resolve('2')
+          //   })
+          // });
         };
-        return enqueue().then(() => {
-          // console.log("1");
+        return enqueue().then((res) => {
+          console.log(res)
+          // console.log(tasks,'ttt')
           return Promise.all(tasks);
         });
       }
 
       // test
-      // const timeout = (i) =>
-      //   new Promise((resolve) => setTimeout(() => resolve(i), i));
-      // limit(2, [1000, 1000, 1000, 1000], timeout).then((res) => {
-      //   console.log(res);
-      // });
+      const timeout = (i) =>
+        new Promise((resolve) => setTimeout(() => resolve(i), i));
+      limit(3, [1000, 1000, 1000, 4000], timeout).then((res) => {
+        console.log(res);
+      });
     </script>
   </body>
 </html>
