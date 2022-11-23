@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>学习</title>
+  </head>
+  <body>
+    <canvas id="c2d" class="c2d" width="1000" height="500"></canvas>
+    <script type="module">
+      import * as THREE from "https://threejs.org/build/three.module.js";
+
+      const canvas = document.querySelector("#c2d");
+      // 渲染器
+      const renderer = new THREE.WebGLRenderer({ canvas });
+
+      const fov = 40; // 视野范围
+      const aspect = 2; // 相机默认值 画布的宽高比
+      const near = 0.1; // 近平面
+      const far = 1000; // 远平面
+      // 透视投影相机
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.set(0, 10, 20);
+      camera.lookAt(0, 0, 0);
+
+      // 场景
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color("black");
+
+      {
+        // 灯光
+        const color = 0xffffff;
+        const intensity = 1;
+        // 方向光
+        const light = new THREE.DirectionalLight(color, intensity);
+        light.position.set(0, 10, 0);
+        light.target.position.set(-5, 0, 0);
+        scene.add(light);
+        scene.add(light.target);
+      }
+      {
+        const radius = 8; // 球体半径
+        const widthSegments = 32; // 水平分段数
+        const heightSegments = 16; // 垂直分段数
+        var sphereGeometry = new THREE.SphereGeometry(
+          radius,
+          widthSegments,
+          heightSegments
+        );
+      }
+      {
+        // 立体几何
+        const boxWidth = 4;
+        const boxHeight = 4;
+        const boxDepth = 4;
+        const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load("./image/c.png");
+        // 基础材质
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+        });
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        // 水平
+        texture.repeat.x = 4;
+        // 垂直
+        texture.repeat.y = 4;
+        // 水平
+        // texture.offset.x = 0.5;
+        // 垂直
+        // texture.offset.y = 0.5;
+        // 水平
+        // texture.center.x = 0.5;
+        // 垂直
+        // texture.center.y = 0.5;
+        // 旋转弧度
+        // texture.rotation = THREE.MathUtils.degToRad(45);
+
+        // 网格
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.x = 5;
+        scene.add(mesh);
+      }
+
+      // 渲染
+      function render() {
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+
+      requestAnimationFrame(render);
+    </script>
+  </body>
+</html>

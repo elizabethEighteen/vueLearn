@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas id="c2d" class="c2d" width="1000" height="500"></canvas>
+    <script type="module">
+      import * as THREE from "https://threejs.org/build/three.module.js";
+      import { OrbitControls } from "https://threejsfundamentals.org/threejs/resources/threejs/r132/examples/jsm/controls/OrbitControls.js";
+
+      const canvas = document.querySelector("#c2d");
+      const renderer = new THREE.WebGLRenderer({ canvas });
+      renderer.shadowMap.enabled = true;
+      const fov = 40;
+      const aspect = 2;
+      const near = 0.1;
+      const far = 1000;
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.set(0, 50, 50);
+      camera.lookAt(0, 0, 0);
+      const controls = new OrbitControls(camera, canvas);
+      controls.update();
+
+      const scene = new THREE.Scene();
+      {
+        // 开启灯光
+        const color = 0xffffff;
+        const intensity = 1;
+        const light = new THREE.DirectionalLight(color, intensity);
+        light.castShadow = true;
+        light.position.set(10, 10, 10);
+        light.target.position.set(-4, 0, -4);
+        scene.add(light);
+        scene.add(light.target);
+        const helper = new THREE.DirectionalLightHelper(light);
+        scene.add(helper);
+        //
+        const cameraHelper = new THREE.CameraHelper(light.shadow.camera);
+        scene.add(cameraHelper);
+        //
+        const d = 50;
+        light.shadow.camera.left = -d;
+        light.shadow.camera.right = d;
+        light.shadow.camera.top = d;
+        light.shadow.camera.bottom = -d;
+        light.shadow.camera.near = 1;
+        light.shadow.camera.far = 60;
+      }
+      {
+        //  平面几何
+        const groundGeometry = new THREE.PlaneGeometry(50, 50);
+        const groundMaterial = new THREE.MeshPhongMaterial({
+          color: 0xcc8866,
+          side: THREE.DoubleSide,
+        });
+        const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+        groundMesh.rotation.x = Math.PI * -0.5;
+        groundMesh.receiveShadow = true;
+        scene.add(groundMesh);
+      }
+      {
+        //几何体
+        const cubeSize = 4;
+        const cubeGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        const cubeMat = new THREE.MeshPhongMaterial({ color: "#8ac" });
+        const cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);
+        cubeMesh.castShadow = true;
+        cubeMesh.receiveShadow = true;
+        cubeMesh.position.set(cubeSize + 1, cubeSize / 2, 0);
+        scene.add(cubeMesh);
+      }
+      {
+      }
+      function render() {
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+    </script>
+  </body>
+</html>

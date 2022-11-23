@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>学习</title>
+  </head>
+  <body>
+    <canvas id="c2d" class="c2d" width="1000" height="500"></canvas>
+    <script type="module">
+      import * as THREE from "https://threejs.org/build/three.module.js";
+
+      const canvas = document.querySelector("#c2d");
+      // 渲染器
+      const renderer = new THREE.WebGLRenderer({ canvas });
+
+      const fov = 40; // 视野范围
+      const aspect = 2; // 相机默认值 画布的宽高比
+      const near = 0.1; // 近平面
+      const far = 1000; // 远平面
+      // 透视投影相机
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.set(0, 10, 20);
+      camera.lookAt(0, 0, 0);
+
+      // 场景
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color("black");
+
+      {
+        // 灯光
+        const color = 0xffffff;
+        const intensity = 1;
+        // 方向光
+        const light = new THREE.DirectionalLight(color, intensity);
+        light.position.set(0, 10, 0);
+        light.target.position.set(-5, 0, 0);
+        scene.add(light);
+        scene.add(light.target);
+      }
+      const radius = 8; // 球体半径
+      const widthSegments = 32; // 水平分段数
+      const heightSegments = 16; // 垂直分段数
+      const geometry = new THREE.SphereGeometry(
+        radius,
+        widthSegments,
+        heightSegments
+      );
+      const material = new THREE.MeshPhongMaterial({
+        color: 0x00ff00, // 也可以使用CSS的颜色字符串
+    });
+
+      // 网格
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = 10;
+      scene.add(mesh);
+
+      {
+        const radius = 8; // 球体半径
+        const widthSegments = 32; // 水平分段数
+        const heightSegments = 16; // 垂直分段数
+        const phiStart = Math.PI * 0.25; // 水平（经线）起始角度
+        const phiLength = Math.PI * 2; // 水平（经线）扫描角度的大小
+        const thetaStart = Math.PI * 0.25; // 垂直（纬线）起始角度
+        const thetaLength = Math.PI * 0.5; // 垂直（纬线）扫描角度大小
+        const geometry1 = new THREE.SphereGeometry(
+          radius,
+          widthSegments,
+          heightSegments,
+          phiStart,
+          phiLength,
+          thetaStart,
+          thetaLength
+        );
+
+        // 网格
+        const mesh1 = new THREE.Mesh(geometry1, material);
+        mesh1.position.x = -10;
+        scene.add(mesh1);
+      }
+
+      // 渲染
+      function render() {
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+
+      requestAnimationFrame(render);
+    </script>
+  </body>
+</html>

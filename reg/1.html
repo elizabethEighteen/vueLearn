@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script type="module">
+      let reg = /\babc/;
+      let str = "abcd";
+      console.log(reg.test(str));
+      console.log(str.replace(reg, "e"));
+      console.log(str.match(reg));
+      console.log(reg.exec(str));
+    </script>
+    <script type="module">
+      let str1 = "999";
+      let reg1 = /^\d{3}$/;
+      console.log(reg1.test(str1));
+    </script>
+    <script type="module">
+      let str2 = "ababab";
+      let reg2 = /^(ab){3}$/;
+      console.log(reg2.test(str2));
+    </script>
+    <script>
+        // 零宽断言
+        // 正向先行
+        let str3 = "<span class=\"read-count\">阅读数：641</span>"
+        let reg3 = /.+(?=<\/span>)/
+        console.log(reg3.exec(str3),'2')
+        // 正向后行
+        // ?<=
+        // 负向先行断言
+        let str4 = '我爱祖国，我是祖国的花朵'
+        let reg4 = /祖国(?!的花朵)/
+        console.log(reg4.exec(str4))
+        // 负向后行
+        //?<!
+
+    </script>
+    <script>
+        // 捕获
+        let str5 = '020-85653333'
+        let reg5 = /(0\d{2})-(\d{8})/
+        console.log(reg5.exec(str5))
+        // 命名编号捕获
+        let reg6 = /(?<quhao>0\d{2})-(?<haoma>\d{8})/
+        console.log(reg6.exec(str5))
+        // 非捕获组
+        let reg7 = /(?:0\d{2})-(\d{8})/
+        console.log(reg7.exec(str5))
+    </script>
+    <script>
+        // 反向引用
+        let reg8 = /(\w)\1/g
+        let str8 = 'aabbbbgbddesddfiid'
+        console.log(reg8.exec(str8))
+        console.log(reg8.exec(str8))
+        console.log(reg8.exec(str8))
+    </script>
+    <script>
+        // 贪婪匹配
+        let str9 ='61762828 176 2991 87321'
+        let reg9 = /(\d{1,2})(\d{3,4})/g
+        console.log(reg9.exec(str9))
+        console.log(reg9.exec(str9))
+        // 懒惰匹配
+        // ?
+
+    </script>
+    <script>
+        // 反义
+        // \W \D \S \B [^x] [^aeiou]
+    </script>
+  </body>
+</html>
