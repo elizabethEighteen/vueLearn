@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+
+    <script>
+        function asyncFn (val) {
+            return new Promise((resolve)=>{
+                setTimeout(() => {
+                    resolve(val)
+                }, 2000);
+            })
+        }
+        function *gen (){
+            yield asyncFn('1')
+            yield asyncFn('2')
+            yield asyncFn('3')
+        }
+        function autoRun (gen,val) {
+            let res = gen.next(val)
+            console.log(res)
+            if(!res.done) {
+                res.value.then((res)=>{
+                    console.log(res)
+                    autoRun(gen,res)
+                })
+            }
+        }
+        autoRun(gen())
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+
+    <script>
+        const asycnFn = (val)=>{
+            return new Promise((resolve)=>{
+                setTimeout(() => {
+                    resolve(val)
+                }, 2000);
+            })
+        }
+
+        function pool (limit,arr) {
+            const tasks = []
+            const doingTasks = []
+            let i = 0;
+            const quecue = ()=>{
+                console.log('queque')
+                if(i=== arr.length) {
+                    return Promise.resolve()
+                }
+                const task = asycnFn(arr[i])
+                i++
+                const doingTask = task.then(()=>{
+                    doingTasks.splice(doingTasks.indexOf(doingTask),1)
+                })
+                tasks.push(task)
+                doingTasks.push(doingTask)
+                const res = doingTasks.length>=limit?Promise.race(doingTasks):Promise.resolve()
+                return res.then(quecue)
+            }
+            return quecue().then(()=>{
+                return Promise.all(tasks)
+            })
+        }
+        pool(2,[1,2,3,4,5,6,7,8]).then((res)=>{
+            console.log(res)
+        })
+    </script>
+</body>
+</html>

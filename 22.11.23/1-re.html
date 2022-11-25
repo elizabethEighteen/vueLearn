@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // function MyPromise (fn){
+      //     this.value = ''
+      //     this.cbs = []
+      //     const resolve = (val)=>{
+      //         this.value = val
+      //         this.cbs.forEach(fn=>fn())
+      //     }
+      //     fn(resolve)
+      // }
+      // MyPromise.prototype.then = function(onResolved) {
+      //     this.cbs.push(()=>{
+      //         onResolved(this.value)
+      //     })
+      // }
+
+      // const p1 = new MyPromise((resolve)=>{
+      //     setTimeout(() => {
+      //         resolve('222')
+      //     }, 2000);
+      // })
+      // p1.then((res)=>{
+      //     console.log(res,'1111')
+      // })
+
+      function MyPromise(fn) {
+        this.value = "";
+        this.cbs = [];
+        const resolve = (val) => {
+          this.value = val;
+          this.cbs.forEach((fn) => fn());
+        };
+        fn(resolve);
+      }
+      MyPromise.prototype.then = function (onResolved) {
+        return new MyPromise((resolve) => {
+          this.cbs.push(() => {
+            const res = onResolved(this.value);
+            if (res instanceof MyPromise) {
+                res.then(resolve)
+            }else {
+                resolve()
+            }
+          });
+        });
+      };
+
+      const p1 = new MyPromise((resolve) => {
+        setTimeout(() => {
+          resolve("222");
+        }, 2000);
+      });
+      p1.then((res) => {
+        console.log(res, "1");
+        return new MyPromise((resolve) => {
+          setTimeout(() => {
+            resolve("111");
+          }, 1000);
+        });
+      }).then((res) => {
+        console.log(res, "2");
+      });
+    </script>
+  </body>
+</html>

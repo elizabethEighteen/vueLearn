@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      function isObject(val) {
+        return val !== null && typeof val === "object";
+      }
+      class Dep {
+        constructor() {
+          this.deps = new Set();
+        }
+        depend() {
+          if (Dep.target) {
+            this.deps.add(Dep.target);
+          }
+        }
+        notify() {
+          this.deps.forEach((watcher) => watcher.update());
+        }
+      }
+      Dep.target = null;
+      const targetStack = [];
+      function pushTarget(_target) {
+        if (Dep.target) targetStack.push(Dep.target);
+        Dep.target = _target;
+      }
+      function popTarget() {
+        Dep.target = targetStack.pop();
+      }
+      function reactive(data) {
+        if (isObject(data)) {
+          Object.keys(data).forEach((key) => {
+            defineReactive(data, key);
+          });
+        }
+        return data;
+      }
+      function defineReactive(data, key) {
+        let val = data[key];
+        // 收集依赖
+        const dep = new Dep();
+        Object.defineProperty(data, key, {
+          get() {
+            dep.depend();
+            return val;
+          },
+          set(newVal) {
+            val = newVal;
+            dep.notify();
+          },
+        });
+        if (isObject(val)) {
+          reactive(val);
+        }
+      }
+      class Watcher {
+        constructor(getter, options = {}) {
+          const { computed, watch, callback } = options;
+          this.getter = getter;
+          this.computed = computed;
+          this.watch = watch;
+          this.callback = callback;
+          if (computed) {
+            this.dep = new Dep();
+          } else {
+            this.get();
+          }
+        }
+        get() {
+            /**
+             * nice
+            */
+          pushTarget(this);
+          this.value = this.getter();
+          popTarget();
+          return this.value;
+        }
+        depend() {
+          this.dep.depend();
+        }
+        update() {
+          if (this.computed) {
+            this.get();
+            this.dep.notify();
+          } else if (this.watch) {
+            const oldValue = this.value;
+            this.get();
+            this.callback(this.value, oldValue);
+          } else {
+            this.get();
+          }
+        }
+      }
+      function computed(getter) {
+        let def = {};
+        const computedWatcher = new Watcher(getter, { computed: true });
+        Object.defineProperty(def, "value", {
+          get() {
+            computedWatcher.depend();
+            return computedWatcher.get();
+          },
+        });
+        return def;
+      }
+      function watch(getter, callback) {
+        new Watcher(getter, { watch: true, callback });
+      }
+      // const data = reactive({
+      //     msg:'hello word'
+      // })
+      // new Watcher(()=>{
+      //     document.getElementById('app').innerHTML = `msg is ${data.msg}`
+      // })
+      // setTimeout(() => {
+      //     data.msg = 'rrr'
+      // }, 2000);
+      //       const data = reactive({
+      //         number: 1,
+      //       });
+
+      //       const numberPlusOne = computed(() => data.number + 2);
+
+      //       // 渲染函数watcher
+      //       new Watcher(() => {
+      //         document.getElementById("app").innerHTML = `
+      //     computed: 1 + number 是 ${numberPlusOne.value}
+      //   `;
+      //       });
+      //   setTimeout(() => {
+      //     data.number = 2
+      //   }, 2000);
+
+      const data = reactive({
+        msg: "hello",
+      });
+      watch(
+        () => data.msg,
+        (newVal, oldVal) => {
+          console.log(newVal, oldVal);
+        }
+      );
+      setTimeout(() => {
+        data.msg = "222";
+      }, 2000);
+    </script>
+  </body>
+</html>

@@ -26,7 +26,7 @@
 
         MyPromise.prototype.then = function (resolve) {
             return new MyPromise((reso)=>{
-                console.log(this,'ss')
+                // console.log(this,'ss')
                 this.cbs.push(()=>{
                     let res = resolve(this.value)
                     if(res instanceof MyPromise) {
@@ -44,23 +44,23 @@
                 resolve(11)
             }, 3000);
         })
-        // p1.then((res)=>{
-        //     console.log(2)
-        //     console.log(res)
-        //     return new MyPromise((resolve)=>{
-        //         setTimeout(() => {
-        //             resolve(res)
-        //         }, 3000);
-        //     })
-        // }).then((res)=>{
-        //     console.log(3)
-        //     console.log(res)
-        // })
         p1.then((res)=>{
             console.log(2)
             console.log(res)
-            return 22
+            return new MyPromise((resolve)=>{
+                setTimeout(() => {
+                    resolve(res)
+                }, 3000);
+            })
+        }).then((res)=>{
+            console.log(3)
+            console.log(res)
         })
+        // p1.then((res)=>{
+        //     console.log(2)
+        //     console.log(res)
+        //     return 22
+        // })
 
 
 
