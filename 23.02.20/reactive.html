@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">222</div>
+
+    <script>
+      function isObj(val) {
+        return (typeof val === "object") & (val != null);
+      }
+      function reactive(obj) {
+        if (isObj(obj)) {
+          for (let key in obj) {
+            defineReactive(obj, key);
+          }
+        }
+      }
+      function defineReactive(obj, key) {
+        let val = data[key];
+        let dep = new Dep();
+        Object.defineProperty(obj, key, {
+          get() {
+            dep.depend();
+            return val;
+          },
+          set(newVal) {
+            val = newVal;
+            dep.notify();
+          },
+        });
+        if (isObj(val)) {
+          reactive(val);
+        }
+      }
+      class Dep {
+        constructor() {
+          this.deps = new Set()
+        }
+        depend() {
+          if (Dep.target) {
+            this.deps.add(Dep.target);
+          }
+        }
+        notify() {
+          this.deps.forEach(watcher=>watcher.notify())
+        }
+      }
+      let targetStack = [];
+      function pushTarget(_target) {
+        if (_target) {
+          targetStack.push(_target);
+          Dep.target = _target;
+        }
+      }
+      function popTarget() {
+        Dep.target = targetStack.pop();
+      }
+      class Watcher {
+        constructor(getter) {
+          this.getter = getter;
+          this.get();
+        }
+        get() {
+          pushTarget(this);
+          this.getter();
+          popTarget();
+        }
+        notify() {
+          this.get();
+        }
+      }
+
+      // test
+      let data = { a: 1 };
+      reactive(data);
+      new Watcher(() => {
+        document.getElementById("app").innerHTML = data.a;
+      });
+      setTimeout(() => {
+          data.a = 2
+      }, 2000);
+    </script>
+  </body>
+</html>

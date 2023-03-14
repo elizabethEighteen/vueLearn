@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>学习</title>
+  </head>
+  <body>
+    <canvas id="c2d" class="c2d" width="1000" height="500"></canvas>
+    <script type="module">
+      import * as THREE from "./file/three.js-dev/build/three.module.js";
+      import { OrbitControls } from "./file/three.js-dev/examples/jsm/controls/OrbitControls.js";
+      import { FBXLoader } from "./file/three.js-dev/examples/jsm/loaders/FBXLoader.js";
+      let actions = []; // 所有的动画数组
+      let gui = {}; // 动画控制
+      let mixer = null; // AnimationMixer 对象
+      let meshHY = null;
+
+      const canvas = document.querySelector("#c2d");
+      // 渲染器
+      const renderer = new THREE.WebGLRenderer({ canvas });
+      // 开启阴影
+      renderer.shadowMap.enabled = true;
+
+      const fov = 40; // 视野范围
+      const aspect = 2; // 相机默认值 画布的宽高比
+      const near = 0.1; // 近平面
+      const far = 10000; // 远平面
+      // 透视投影相机
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.set(1000, 500, 1500);
+      camera.lookAt(0, 0, 0);
+      // 控制相机
+      //   const controls = new OrbitControls(camera, canvas);
+      //   controls.update();
+
+      // 场景
+      const scene = new THREE.Scene();
+
+      // 背景
+      scene.background = new THREE.Color(0x87ceeb);
+      // 雾
+      scene.fog = new THREE.Fog(0x87ceeb, 200, 10000);
+
+      // 辅助
+      const axes = new THREE.AxisHelper(700);
+      scene.add(axes);
+
+      {
+        // 灯光
+        const skyColor = 0xffffff; // 天空 白色
+        const groundColor = 0x000000; // 地面 黑色
+        const intensity = 1;
+        const light = new THREE.HemisphereLight(
+          skyColor,
+          groundColor,
+          intensity
+        );
+        scene.add(light);
+      }
+      let dLight = null;
+      {
+        const light = new THREE.DirectionalLight(0xaaaaaa);
+        light.position.set(0, 200, 100);
+        light.lookAt(new THREE.Vector3());
+
+        light.castShadow = true;
+        light.shadow.camera.top = 300;
+        light.shadow.camera.bottom = -300;
+        light.shadow.camera.left = -300;
+        light.shadow.camera.right = 300;
+
+        // 开启阴影投射
+        light.castShadow = true;
+        dLight = light;
+        scene.add(light);
+      }
+
+      {
+        // 地面
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load("./file/23/1.jpg");
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.magFilter = THREE.NearestFilter;
+        // 纹理 重复
+        texture.repeat.set(100, 100);
+
+        const planeGeo = new THREE.PlaneGeometry(10000, 10000);
+        const planeMat = new THREE.MeshPhongMaterial({
+          map: texture,
+          side: THREE.DoubleSide,
+        });
+        const mesh = new THREE.Mesh(planeGeo, planeMat);
+        mesh.rotation.x = Math.PI * -0.5;
+        mesh.receiveShadow = true;
+        scene.add(mesh);
+      }
+      let door = null;
+      const loader = new FBXLoader();
+      loader.load("./file/main_fbx.fbx", function (mesh) {
+        console.log("mesh", mesh);
+        // 设置模型的每个部位都可以投影
+        mesh.traverse(function (child) {
+          // console.log(child)
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+          if (child.name === "立方体") {
+            child.material.metalness = 0.5;
+            // 粗糙度
+            child.material.roughness = 0.8;
+            child.material.color.set(0x00ffff);
+            door = child;
+            console.log(child);
+          }
+        });
+
+        // 设置光线焦点模型
+        dLight.target = mesh;
+        meshHY = mesh;
+        scene.add(mesh);
+      });
+
+      //   const clock = new THREE.Clock();
+      // 渲染
+      function render() {
+        // if (meshHY) {
+        //   onCodeMove(meshHY);
+        // }
+        // const time = clock.getDelta();
+        // if (mixer) {
+        //   mixer.update(time);
+        // }
+        // console.log(door?.position)
+        if (door && door.position && door.position.x) {
+          // con
+          door.position.z = door.position.z + 0.2;
+          door.position.x = door.position.x + 0.2;
+          door.position.y = door.position.y + 0.2;
+        }
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+
+      requestAnimationFrame(render);
+    </script>
+  </body>
+</html>
