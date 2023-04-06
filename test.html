@@ -71,16 +71,109 @@
       <span></span>
       <span></span>
     </div>
-
+    <div id="root"></div>
     <script>
       // const obj = {https://ktlinecorridor.gczhyun.com/applet/Files/2022/10/12/19557403908828674.jpg: "19557403908828675"}
-      const obj = {}
-      obj['https://ktlinecorridor.gczhyun.com/applet/Files/2022/10/12/19557403908828674.jpg'] = 19557403908828675
-      const key = 'https://ktlinecorridor.gczhyun.com/applet/Files/2022/10/12/19557403908828674.jpg'
-      console.log(obj)
-      console.log(obj[key])
-      console.log('str'.indexOf('2'))
+      // const obj = {}
+      // obj['https://ktlinecorridor.gczhyun.com/applet/Files/2022/10/12/19557403908828674.jpg'] = 19557403908828675
+      // const key = 'https://ktlinecorridor.gczhyun.com/applet/Files/2022/10/12/19557403908828674.jpg'
+      // console.log(obj)
+      // console.log(obj[key])
+      // console.log('str'.indexOf('2'))
 
+      // window.requestIdleCallback(callback[, options])
+      // 示例
+      let handle = window.requestIdleCallback(
+        (idleDeadline) => {
+          const { didTimeout, timeRemaining } = idleDeadline;
+          console.log(`超时了吗？${didTimeout}`);
+          console.log(`可用时间剩余${timeRemaining.call(idleDeadline)}ms`);
+          // do some stuff
+          const now = +new Date(),
+            timespent = 10;
+          while (+new Date() < now + timespent);
+          console.log(`花了${timespent}ms搞事情`);
+          console.log(`可用时间剩余${timeRemaining.call(idleDeadline)}ms`);
+        },
+        { timeout: 1000 }
+      );
+      // 输出结果
+      // 超时了吗？false
+      // 可用时间剩余49.535000000000004ms
+      // 花了10ms搞事情
+      // 可用时间剩余38.64ms
+      // let a = null
+      // let c = {s:1}
+      // a.idle = c
+      // c.idle = a
+      // console.log(1)
+      // console.log(a,c)
+      /**
+       *
+       */
+      // function randomHexColor() {
+      //   return (
+      //     "#" +
+      //     ("0000" + ((Math.random() * 0x1000000) << 0).toString(16)).substr(-6)
+      //   );
+      // }
+      // // console.log(randomHexColor())
+      // // console.log(("0000" + ((Math.random() * 0x1000000) << 0).toString(16)).substr(-4))
+      // // console.log('abcdef'.substr(2))
+      // // console.log(+new Date())
+
+      // setTimeout(function () {
+      //   var k = 0;
+      //   var root = document.getElementById("root");
+      //   for (var i = 0; i < 100000; i++) {
+      //     k += new Date() - 0;
+      //     var el = document.createElement("div");
+      //     el.innerHTML = k;
+      //     root.appendChild(el);
+      //     el.style.cssText = `background:${randomHexColor()};height:40px`;
+      //   }
+      // }, 1000);
+      /**
+       *
+       */
+      function randomHexColor() {
+        return (
+          "#" +
+          ("0000" + ((Math.random() * 0x1000000) << 0).toString(16)).substr(-6)
+        );
+      }
+      var root = document.getElementById("root");
+      // setTimeout(function () {
+      //   function loop(n) {
+      //     var k = 0;
+      //     console.log(n);
+      //     for (var i = 0; i < 100; i++) {
+      //       k += new Date() - 0;
+      //       var el = document.createElement("div");
+      //       el.innerHTML = k;
+      //       root.appendChild(el);
+      //       el.style.cssText = `background:${randomHexColor()};height:40px`;
+      //     }
+      //     if (n) {
+      //       setTimeout(function () {
+      //         loop(n - 1);
+      //       }, 40);
+      //     }
+      //   }
+      //   loop(100);
+      // }, 1000);
+      // var now = new Date - 0;
+      // console.log(now,'now')
+      // console.log(new Date)
+      // console.log(new Date())
+
+      // console.log(decodeURIComponent('http://11.188.130.19:31840/commonPost?target_url=http%3A%2F%2F172.2.48.22%2Ftechnicaleconomy%2Fapi%2FSystem%2FGetTechnicalEconomyEnums'))
+      // console.log(JSON.parse("{\"adminPowSup\":\"温泉县供电公司\",\"adminPowSupId\":\"1963485d365a8f42487cfbf6235b44aa\",\"assetOwnerPartm\":\"国网新疆电力有限公司克拉玛依供电公司\",\"buidModifPopuse\":\"提升电网安全稳定水平\",\"cityId\":\"FCE288407DEA40509E753605847B0482\",\"cityName\":\"国网新疆电力有限公司博尔塔拉供电公司\",\"designerId\":\"\",\"designerUnitId\":\"\",\"fileIds\":\"1678974699939,1678974699939\",\"modifReason\":\"网架结构不合理\",\"mrid\":\"dc6041e3668901a599b34723d0584dbe\",\"organTime\":\"2023-03-16\",\"organUnit\":\"测试\",\"planYear\":\"2023\",\"prjClassif\":\"迎峰度夏项目\",\"prjLevel\":\"省级项目\",\"prjName\":\"测试\",\"prjNature\":\"城网\",\"proCode\":\"11\",\"proDesigner\":\"\",\"proDesignerUnit\":\"\",\"proIsOpen\":\"1\",\"projectPlan\":\"测试\",\"projectStatus\":\"已委托\",\"regionAttr\":\"A\",\"reviewerId\":\"\",\"reviewerName\":\"undefined\",\"runId\":\"4028804f6a0ca167016a0f4254e70033\",\"runName\":\"王刚\",\"speciClassif\":\"配电架空\",\"submittedBy\":\"地州杜\",\"submittedById\":\"402880486998baf60169a332b08c0331\",\"surveyor\":\"杜志敏\",\"surveyorId\":\"402880486998baf60169a332b08c0331\",\"voltClass\":\"20kV\"}"))
+      // console.log(JSON.parse('undefined'), 111)
+
+      console.log('aBcD'.toLocaleLowerCase())
+      let obj = {a:null}
+      console.log(obj.a?.indexOf('222'))
     </script>
   </body>
 </html>
