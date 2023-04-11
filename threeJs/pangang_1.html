@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>学习</title>
+  </head>
+  <body>
+    <canvas id="c2d" class="c2d" width="2000" height="1000"></canvas>
+
+    <div id="closeJiedidao">合上接地刀</div>
+    <div id="openJiedidao">打开接地刀</div>
+    <div id="closeDuanluqi">合上断路器</div>
+    <div id="openDuanluqi">打开断路器</div>
+    <script type="module">
+      import * as THREE from "./file/three.js-dev/build/three.module.js";
+      import { OrbitControls } from "./file/three.js-dev/examples/jsm/controls/OrbitControls.js";
+      import { FBXLoader } from "./file/three.js-dev/examples/jsm/loaders/FBXLoader.js";
+      import Tween from './tween.js'
+
+        console.log(Tween)
+
+
+
+      let closeJiedidao = document.getElementById('closeJiedidao')
+      let openJiedidao = document.getElementById('openJiedidao')
+      let closeDuanluqi = document.getElementById('closeDuanluqi')
+      let openDuanluqi = document.getElementById('openDuanluqi')
+      closeJiedidao.onclick = ()=>{
+        isCloseJiedidao = true
+      }
+      openJiedidao.onclick = ()=>{
+        isCloseJiedidao = false
+      }
+      closeDuanluqi.onclick = ()=>{
+        isCloseDuanluqi = true
+      }
+      openDuanluqi.onclick = ()=>{
+        isCloseDuanluqi = false
+      }
+      const canvas = document.querySelector("#c2d");
+      // 渲染器
+      const renderer = new THREE.WebGLRenderer({ canvas });
+      // 开启阴影
+      renderer.shadowMap.enabled = true;
+
+      const fov = 40; // 视野范围
+      const aspect = 2; // 相机默认值 画布的宽高比
+      const near = 0.1; // 近平面
+      const far = 10000; // 远平面
+      // 透视投影相机
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.set(-1000, 200, 2500);
+      camera.lookAt(0, 0, 0);
+      // 控制相机
+      const controls = new OrbitControls(camera, canvas);
+      controls.update();
+
+      // 场景
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x808080);
+
+      {
+        // 灯光
+        const skyColor = 0xffffff; // 天空 白色
+        const groundColor = 0x000000; // 地面 黑色
+        const intensity = 1;
+        const light = new THREE.HemisphereLight(
+          skyColor,
+          groundColor,
+          intensity
+        );
+        scene.add(light);
+      }
+      let dLight = null;
+      {
+        const light = new THREE.DirectionalLight(0xaaaaaa);
+        light.position.set(0, 200, 100);
+        light.lookAt(new THREE.Vector3());
+
+        // light.castShadow = true;
+        light.shadow.camera.top = 300;
+        light.shadow.camera.bottom = -300;
+        light.shadow.camera.left = -300;
+        light.shadow.camera.right = 300;
+
+        // 开启阴影投射
+        // light.castShadow = true;
+        dLight = light;
+        scene.add(light);
+      }
+
+      let xiaotuiche = null; // 小推车
+      let menzhong = null; //门_中
+      let menshang = null; //门_上
+      let youmen = null; // 右门
+      let menxia = null; // 下门
+      let tuicheshi = null; // 推车室
+      let dangban1 = null; //挡板1
+      let dangban2 = null; // 挡板2
+      let shoubing = null; // 手柄
+      let duanluqi1 = null; // 断路器
+      let duanluqi2 = null; // 断路器
+      let duanluqi3 = null; // 断路器
+      let jiedidao1 = null; // 接地刀1
+      let jiedidao2 = null; //接地刀2
+
+      const loader = new FBXLoader();
+      loader.load("./file/zhuti0410.fbx", function (mesh) {
+        console.log("mesh", mesh);
+        mesh.position.x = mesh.position.x-400
+        mesh.position.y = mesh.position.y+200
+        // 设置模型的每个部位都可以投影
+        mesh.traverse(function (child) {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+          if (child.name === "小推车") {
+            xiaotuiche = child;
+            xiaotuiche.traverse(function(child){
+                // console.log(child.name,'小推车')
+            })
+          }
+          if (child.name === "门_中") {
+            menzhong = child;
+          }
+          if (child.name === "门_上") {
+            menshang = child;
+          }
+          if (child.name === "右门") {
+            youmen = child;
+          }
+          if (child.name === "推车室") {
+            tuicheshi = child;
+            child.traverse(function (child) {
+              if (child.name === "断路器01") {
+                
+                duanluqi1 = child;
+                // console.log(duanluqi1,'duanluqi1')
+              }
+              if (child.name === "断路器02") {
+                duanluqi2 = child;
+              }
+              if (child.name === "断路器03") {
+                duanluqi3 = child;
+              }
+            });
+          }
+          if (child.name === "柜子主体") {
+            child.traverse(function (child) {
+              if (child.name === "挡板上") {
+                dangban1 = child;
+              }
+              if (child.name === "挡板上_1") {
+                dangban2 = child;
+              }
+            });
+          }
+          if (child.name === "手柄") {
+            child.traverse(function(child){
+                if(child.type === 'Mesh') {
+                    child.material.color.set(0x000000)
+                }
+            })
+            shoubing = child;
+          }
+          if (child.name === "门_下") {
+            menxia = child;
+          }
+          if (child.name === "接地刀") {
+            child.traverse(function(child){
+                // console.log(child.name)
+                if(child.name === '闸') {
+                    jiedidao1 = child
+                    // changeJiedidaoColor(jiedidao1, 0x000000)
+                    // console.log(jiedidao1)
+                }
+                if(child.name === '闸_中') {
+                    jiedidao2 = child
+                    // changeJiedidaoColor(jiedidao2, 0x000000)
+                    // console.log(jiedidao2)
+                }
+                // console.log(jiedidao1,jiedidao2)
+            })
+            
+          }
+        });
+
+        // 设置光线焦点模型
+        dLight.target = mesh;
+        scene.add(mesh);
+        // requestAnimationFrame
+        requestAnimationFrame(render);
+      });
+      /**
+       * 设置两层数据的初始化样式
+       */
+      function setInitStyle(el, key, key1, value) {
+        if (el && el[key]) {
+          if (el.init) return;
+          el[key][key1] = value;
+          el.init = true;
+        }
+      }
+      /**
+       * 设置简单的初始化样式
+       */
+      function setInitStyleSimple(el, key, value) {
+        if (el) {
+          if (el.init) return;
+          el.init = true;
+          el[key] = value;
+        }
+      }
+      /**
+       * 旋转动画
+       */
+      function animationNegativeRotation(
+        el,
+        key,
+        key1,
+        mostValue,
+        step,
+        callback
+      ) {
+        if (el && el[key]) {
+          if (el[key][key1] > mostValue) {
+            el[key][key1] = el[key][key1] - step;
+          } else {
+            callback && callback();
+          }
+        }
+      }
+      function animationPositiveRotation(
+        el,
+        key,
+        key1,
+        mostValue,
+        step,
+        callback
+      ) {
+        if (el && el[key]) {
+          if (el[key][key1] < mostValue) {
+            el[key][key1] = el[key][key1] + step;
+          } else {
+            callback && callback();
+          }
+        }
+      }
+      // 渲染
+      let isAnimationDone1 = false;
+      let isAnimationDone2 = false;
+      let isAnimationDone3 = false;
+      let isAnimationDone4 = false;
+      let isAnimationDone5 = false;
+      let isAnimationDone6 = false;
+      let isAnimationDone7 = false;
+      let isCloseDuanluqi = false
+      let isCloseJiedidao = false
+      function changeJiedidaoColor(jiedidao,color){
+        // let i = 0 
+        // jiedidao.traverse(function(child){
+        //     i++
+        //     console.log(child,'traverse')
+        //     if(child.type === 'Mesh') {
+        //         child.material.color.set(color)
+        //     }
+        // })
+        recursionSetColor(jiedidao.children)
+        function recursionSetColor(children) {
+            
+            children.forEach(function(child){
+                console.log(child.name)
+                if(child.type === 'Mesh') {
+                    child.material.color.set(color)
+                }
+                if(child.children.length>0) {
+                    recursionSetColor(child.children)
+                }
+            })
+        }
+      }
+      function render() {
+        {
+          // 设置初始化位置
+          setInitStyle(tuicheshi, "position", "x", -800);
+          setInitStyle(xiaotuiche, "position", "x", -800);
+          shoubing.visible = false;
+        }
+        {
+          // 门中打开动画
+          animationNegativeRotation(
+            menzhong,
+            "rotation",
+            "y",
+            -Math.PI / 2,
+            0.02,
+            function () {
+              isAnimationDone1 = true;
+            }
+          );
+        }
+
+        {
+          // 小推车移动动画
+          if (
+            isAnimationDone1
+          ) {
+            // console.log(xiaotuiche.position.x)
+            // translatex -800 -145
+            if (xiaotuiche.position.x < -145) {
+              xiaotuiche.position.x = xiaotuiche.position.x + 5;
+            } else {
+              isAnimationDone2 = true;
+            }
+          }
+          // 推车室
+          if (
+            isAnimationDone1
+          ) {
+            if (tuicheshi.position.x < -145) {
+              tuicheshi.position.x = tuicheshi.position.x + 5;
+            }
+          }
+        }
+        {
+          //打开上门，隐藏右门
+          if (isAnimationDone2) {
+            animationNegativeRotation(
+              menshang,
+              "rotation",
+              "y",
+              -Math.PI / 2,
+              0.02,
+              function () {
+                isAnimationDone3 = true;
+              }
+            );
+            youmen.visible = false;
+          }
+        }
+        {
+          // 推车室进入动画
+          if (isAnimationDone3) {
+            if (tuicheshi.position.x < 220) {
+              tuicheshi.position.x = tuicheshi.position.x + 5;
+            } else {
+              isAnimationDone4 = true;
+            }
+          }
+        }
+        {
+          // 打开挡板展示螺丝刀
+          if (isAnimationDone4) {
+            xiaotuiche.position.x = -800;
+            animationNegativeRotation(
+              menxia,
+              "rotation",
+              "y",
+              -Math.PI / 2,
+              0.02
+            );
+            if (dangban1.position.y < 10) {
+              // -75
+              dangban1.position.y = dangban1.position.y + 0.8;
+            } else {
+              isAnimationDone5 = true;
+            }
+            if (dangban2.position.y > -297) {
+              // -212
+              dangban2.position.y = dangban2.position.y - 0.8;
+            }
+          }
+        }
+        {
+          if (isAnimationDone5) {
+            shoubing.visible = true;
+            if (tuicheshi.position.x < 290) {
+              tuicheshi.position.x = tuicheshi.position.x + 0.5;
+              shoubing.rotation.x = shoubing.rotation.x + 0.05;
+            } else {
+              isAnimationDone6 = true;
+            }
+          }
+        }
+        {
+          // 断路器动画
+          if (isAnimationDone6) {
+            // 打开断路器（初始化动画为打开）
+            if(!isCloseDuanluqi) {
+                if (duanluqi1.position.y < 50 ) {
+                duanluqi1.position.y = duanluqi1.position.y + 1;
+                duanluqi2.position.y = duanluqi2.position.y + 1;
+                duanluqi3.position.y = duanluqi3.position.y + 1;
+                } else {
+                isAnimationDone7 = true;
+                }
+            }else {
+                // 关闭断路器
+                if (duanluqi1.position.y >25.5) {
+                duanluqi1.position.y = duanluqi1.position.y - 1;
+                duanluqi2.position.y = duanluqi2.position.y - 1;
+                duanluqi3.position.y = duanluqi3.position.y - 1;
+                } 
+            }
+            
+          }
+        }
+        {
+          // 接地刀
+          if (isAnimationDone7) {
+            // 打开接地刀
+            if(!isCloseJiedidao) {
+                if (jiedidao1.rotation.z < Math.PI / 2 ){
+                jiedidao1.rotation.z = jiedidao1.rotation.z + 0.02;
+                jiedidao2.rotation.z = jiedidao2.rotation.z + 0.02;
+                }
+            }else {
+                // 关闭接地刀
+                if (jiedidao1.rotation.z >0){
+                    jiedidao1.rotation.z = jiedidao1.rotation.z - 0.02;
+                    jiedidao2.rotation.z = jiedidao2.rotation.z - 0.02;
+                }
+            }
+            
+            
+          }
+        }
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+
+      
+    </script>
+  </body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>学习</title>
+  </head>
+  <body>
+    <canvas id="c2d" class="c2d" width="2000" height="1000"></canvas>
+
+    <div id="closeJiedidao">合上接地刀</div>
+    <div id="openJiedidao">打开接地刀</div>
+    <div id="closeDuanluqi">合上断路器</div>
+    <div id="openDuanluqi">打开断路器</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.0/gsap.min.js"></script>
+    <script type="module">
+      import * as THREE from "./file/three.js-dev/build/three.module.js";
+      import { OrbitControls } from "./file/three.js-dev/examples/jsm/controls/OrbitControls.js";
+      import { FBXLoader } from "./file/three.js-dev/examples/jsm/loaders/FBXLoader.js";
+      
+      import Tween from './tween.js'
+
+      console.log(Tween)
+
+
+
+      let closeJiedidao = document.getElementById('closeJiedidao')
+      let openJiedidao = document.getElementById('openJiedidao')
+      let closeDuanluqi = document.getElementById('closeDuanluqi')
+      let openDuanluqi = document.getElementById('openDuanluqi')
+      closeJiedidao.onclick = ()=>{
+        animation11()
+      }
+      openJiedidao.onclick = ()=>{
+        animation9()
+      }
+      closeDuanluqi.onclick = ()=>{
+        animation10()
+      }
+      openDuanluqi.onclick = ()=>{
+        animation8()
+      }
+      const canvas = document.querySelector("#c2d");
+      // 渲染器
+      const renderer = new THREE.WebGLRenderer({ canvas });
+      // 开启阴影
+      renderer.shadowMap.enabled = true;
+
+      const fov = 40; // 视野范围
+      const aspect = 2; // 相机默认值 画布的宽高比
+      const near = 0.1; // 近平面
+      const far = 10000; // 远平面
+      // 透视投影相机
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.set(-1000, 200, 2500);
+      camera.lookAt(0, 0, 0);
+      // 控制相机
+      const controls = new OrbitControls(camera, canvas);
+      controls.update();
+
+      // 场景
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x808080);
+
+      {
+        // 灯光
+        const skyColor = 0xffffff; // 天空 白色
+        const groundColor = 0x000000; // 地面 黑色
+        const intensity = 1;
+        const light = new THREE.HemisphereLight(
+          skyColor,
+          groundColor,
+          intensity
+        );
+        scene.add(light);
+      }
+      let dLight = null;
+      {
+        const light = new THREE.DirectionalLight(0xaaaaaa);
+        light.position.set(0, 200, 100);
+        light.lookAt(new THREE.Vector3());
+        light.shadow.camera.top = 300;
+        light.shadow.camera.bottom = -300;
+        light.shadow.camera.left = -300;
+        light.shadow.camera.right = 300;
+
+        // 开启阴影投射
+        // light.castShadow = true;
+        dLight = light;
+        scene.add(light);
+      }
+
+      let xiaotuiche = null; // 小推车
+      let menzhong = null; //门_中
+      let menshang = null; //门_上
+      let youmen = null; // 右门
+      let menxia = null; // 下门
+      let tuicheshi = null; // 推车室
+      let dangban1 = null; //挡板1
+      let dangban2 = null; // 挡板2
+      let shoubing = null; // 手柄
+      let duanluqi1 = null; // 断路器
+      let duanluqi2 = null; // 断路器
+      let duanluqi3 = null; // 断路器
+      let jiedidao1 = null; // 接地刀1
+      let jiedidao2 = null; // 接地刀2
+
+      const loader = new FBXLoader();
+      loader.load("./file/zhuti0410.fbx", function (mesh) {
+        mesh.position.x = mesh.position.x-400
+        mesh.position.y = mesh.position.y+200
+        console.log("mesh", mesh);
+        // 设置模型的每个部位都可以投影
+        mesh.traverse(function (child) {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+          if (child.name === "小推车") {
+            xiaotuiche = child;
+            xiaotuiche.traverse(function(child){
+                // console.log(child.name,'小推车')
+            })
+          }
+          if (child.name === "门_中") {
+            menzhong = child;
+          }
+          if (child.name === "门_上") {
+            menshang = child;
+          }
+          if (child.name === "右门") {
+            youmen = child;
+          }
+          if (child.name === "推车室") {
+            tuicheshi = child;
+            child.traverse(function (child) {
+              if (child.name === "断路器01") {
+                
+                duanluqi1 = child;
+                // console.log(duanluqi1,'duanluqi1')
+              }
+              if (child.name === "断路器02") {
+                duanluqi2 = child;
+              }
+              if (child.name === "断路器03") {
+                duanluqi3 = child;
+              }
+            });
+          }
+          if (child.name === "柜子主体") {
+            child.traverse(function (child) {
+              if (child.name === "挡板上") {
+                dangban1 = child;
+              }
+              if (child.name === "挡板上_1") {
+                dangban2 = child;
+              }
+            });
+          }
+          if (child.name === "手柄") {
+            child.traverse(function(child){
+                if(child.type === 'Mesh') {
+                    child.material.color.set(0x000000)
+                }
+            })
+            shoubing = child;
+          }
+          if (child.name === "门_下") {
+            menxia = child;
+          }
+          if (child.name === "接地刀") {
+            child.traverse(function(child){
+                if(child.name === '闸') {
+                    jiedidao1 = child
+                }
+                if(child.name === '闸_中') {
+                    jiedidao2 = child
+                }
+            })
+            
+          }
+        });
+
+        // 设置光线焦点模型
+        dLight.target = mesh;
+        scene.add(mesh);
+        // requestAnimationFrame
+        requestAnimationFrame(render);
+        animation()
+      });
+     async function animation () {
+        // gsap.to(tuicheshi.position,{x:-800,duration:2})
+        await animation1()
+        await animation2()
+        await animation3()
+        await animation4()
+        await animation5()
+        await animation6()
+        await animation7()
+        await animation8()
+        await animation9()
+     }
+      function animation1 () {
+        return new Promise((reslove)=>{
+            // 设置初始化位置
+          setInitStyle(tuicheshi, "position", "x", -800);
+          setInitStyle(xiaotuiche, "position", "x", -800);
+          shoubing.visible = false;
+          reslove()
+        })
+      }
+      function animation2 () {
+        return new Promise((reslove)=>{
+            // 门中打开动画
+            gsap.to(menzhong.rotation,{y:-Math.PI/2,duration:1,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+        })
+      }
+      function animation3 () {
+        return new Promise((reslove)=>{
+            // 推车，推车室动画
+            gsap.to(xiaotuiche.position,{x:-145,duration:2,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(tuicheshi.position,{x:-145,duration:2,ease:'power1.inOut'})
+        })
+      }
+      function animation4 () {
+        return new Promise((reslove)=>{
+            // 打开上门，右门
+            gsap.to(menshang.rotation,{y:-Math.PI/2,duration:1,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            youmen.visible = false
+        })
+      }
+      function animation5 () {
+        return new Promise((reslove)=>{
+            // 推车室进入动画
+            gsap.to(tuicheshi.position,{x:200,duration:1.5,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+        })
+      }
+      function animation6 () {
+        return new Promise((reslove)=>{
+            // 打开挡板，展示螺丝刀
+            xiaotuiche.position.x = -800;
+            gsap.to(menxia.rotation,{y:-Math.PI/2,duration:1,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(dangban1.position,{y:10,duration:1.5,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(dangban2.position,{y:-297,duration:1.5,ease:'power1.inOut'})
+        })
+      }
+      function animation7 () {
+        return new Promise((reslove)=>{
+            // 
+            shoubing.visible = true
+            gsap.to(tuicheshi.position,{x:290,duration:1.5,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(shoubing.rotation,{x:3*Math.PI,duration:1.5,ease:'power1.inOut'})
+        })
+      }
+      function animation8 () {
+        return new Promise((reslove)=>{
+            // 断路器动画（分闸）
+            gsap.to(duanluqi1.position,{y:50,duration:2,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(duanluqi2.position,{y:50,duration:2,ease:'power1.inOut'})
+            gsap.to(duanluqi3.position,{y:50,duration:2,ease:'power1.inOut'})
+        })
+      }
+      function animation9 () {
+        return new Promise((reslove)=>{
+            // 接地刀动画(合闸)
+            gsap.to(jiedidao1.rotation,{z:Math.PI/2,duration:2,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(jiedidao2.rotation,{z:Math.PI/2,duration:2,ease:'power1.inOut'})
+        })
+      }
+      function animation10 () {
+        return new Promise((reslove)=>{
+            // 断路器动画（分闸）
+            gsap.to(duanluqi1.position,{y:25.5,duration:2,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(duanluqi2.position,{y:25.5,duration:2,ease:'power1.inOut'})
+            gsap.to(duanluqi3.position,{y:25.5,duration:2,ease:'power1.inOut'})
+        })
+      }
+      function animation11 () {
+        return new Promise((reslove)=>{
+            // 接地刀动画(分闸)
+            gsap.to(jiedidao1.rotation,{z:0,duration:2,ease:'power1.inOut',onComplete:()=>{
+                reslove()
+            }})
+            gsap.to(jiedidao2.rotation,{z:0,duration:2,ease:'power1.inOut'})
+        })
+      }
+      /**
+       * 设置两层数据的初始化样式
+       */
+      function setInitStyle(el, key, key1, value) {
+        if (el && el[key]) {
+          if (el.init) return;
+          el[key][key1] = value;
+          el.init = true;
+        }
+      }
+      /**
+       * 设置简单的初始化样式
+       */
+      function setInitStyleSimple(el, key, value) {
+        if (el) {
+          if (el.init) return;
+          el.init = true;
+          el[key] = value;
+        }
+      }
+      /**
+       * 旋转动画
+       */
+      
+      function changeJiedidaoColor(jiedidao,color){
+        // let i = 0 
+        // jiedidao.traverse(function(child){
+        //     i++
+        //     console.log(child,'traverse')
+        //     if(child.type === 'Mesh') {
+        //         child.material.color.set(color)
+        //     }
+        // })
+        recursionSetColor(jiedidao.children)
+        function recursionSetColor(children) {
+            
+            children.forEach(function(child){
+                console.log(child.name)
+                if(child.type === 'Mesh') {
+                    child.material.color.set(color)
+                }
+                if(child.children.length>0) {
+                    recursionSetColor(child.children)
+                }
+            })
+        }
+      }
+    
+      function render () {
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+
+      
+    </script>
+  </body>
+</html>

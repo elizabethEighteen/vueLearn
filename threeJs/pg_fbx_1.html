@@ -5,7 +5,7 @@
     <title>学习</title>
   </head>
   <body>
-    <canvas id="c2d" class="c2d" width="1600" height="800"></canvas>
+    <canvas id="c2d" class="c2d" width="2000" height="1000"></canvas>
     <script type="module">
       import * as THREE from "./file/three.js-dev/build/three.module.js";
       import { OrbitControls } from "./file/three.js-dev/examples/jsm/controls/OrbitControls.js";
@@ -66,11 +66,22 @@
         scene.add(light);
       }
 
-      let xiaotuiche = null;
-      let menzhong = null;
-      let menshang = null;
-      let youmen = null;
-      let tuicheshi = null;
+      let xiaotuiche = null; // 小推车
+      let menzhong = null; //门_中
+      let menshang = null; //门_上
+      let youmen = null; // 右门
+      let menxia = null; // 下门
+      let tuicheshi = null; // 推车室
+      let dangban1 = null; //挡板1
+      let dangban2 = null; // 挡板2
+      let shoubing = null; // 手柄
+      // let jiedidao1 = null; // 接地刀
+      // let jiedidao2 = null; // 接地刀
+      // let jiedidao3 = null; // 接地刀
+      let duanluqi1 = null; // 断路器
+      let duanluqi2 = null; // 断路器
+      let duanluqi3 = null; // 断路器
+      let jiedidao = null; // 接地刀
       const loader = new FBXLoader();
       loader.load("./file/zhuti.fbx", function (mesh) {
         console.log("mesh", mesh);
@@ -98,6 +109,44 @@
           if (child.name === "推车室") {
             tuicheshi = child;
             console.log(tuicheshi);
+            child.traverse(function (child) {
+              // console.log(child.name)
+              if (child.name === "断路器01") {
+                duanluqi1 = child;
+                console.log(duanluqi1, "断路器01");
+              }
+              if (child.name === "断路器02") {
+                duanluqi2 = child;
+                console.log(duanluqi2, "断路器02");
+              }
+              if (child.name === "断路器03") {
+                duanluqi3 = child;
+                console.log(duanluqi3, "断路器03");
+              }
+            })
+          }
+          if (child.name === "柜子主体") {
+            child.traverse(function (child) {
+              if (child.name === "挡板上") {
+                dangban1 = child;
+                console.log(dangban1, "挡板1");
+              }
+              if (child.name === "挡板上_1") {
+                dangban2 = child;
+                console.log(dangban2, "挡板2");
+              }
+            });
+          }
+          if (child.name === "手柄") {
+            shoubing = child;
+            console.log(shoubing, "手柄");
+            // child.material.color.set(0x00ffff);
+          }
+          if(child.name === "门_下") {
+            menxia = child
+          }
+          if(child.name === "接地刀") {
+            jiedidao = child
           }
         });
 
@@ -120,22 +169,33 @@
           el[key] = value;
         }
       }
-      function animationNegativeRotation(el, key, key1, mostValue,step, callback) {
+      function animationNegativeRotation(
+        el,
+        key,
+        key1,
+        mostValue,
+        step,
+        callback
+      ) {
         if (el && el[key]) {
           // console.log(el[key][key1],mostValue,'key')
           // console.log(el[key][key1] > mostValue)
           if (el[key][key1] > mostValue) {
             // console.log(el[key][key1]);
             el[key][key1] = el[key][key1] - step;
-          }else {
-            callback()
+          } else {
+            callback && callback();
           }
         }
       }
       // 渲染
       let isMenzhongAnimationDone = false;
-      let isXiaotuicheAnimationDone = false
-      let isMenShangOpenAnimationDone = false
+      let isXiaotuicheAnimationDone = false;
+      let isMenShangOpenAnimationDone = false;
+      let isAnimationDone4 = false;
+      let isAnimationDone5 = false;
+      let isAnimationDone6 = false;
+      let isAnimationDone7 = false;
       function render() {
         {
           // 设置初始化位置
@@ -144,6 +204,9 @@
           setInitStyle(tuicheshi, "position", "x", -800);
           setInitStyle(xiaotuiche, "position", "x", -800);
           // setInitStyleSimple(youmen, "visible", false);
+          if (shoubing) {
+            shoubing.visible = false;
+          }
         }
         {
           // 门中打开动画
@@ -171,8 +234,8 @@
             if (xiaotuiche.position.x < -145) {
               xiaotuiche.position.x = xiaotuiche.position.x + 5;
               // console.log(xiaotuiche.position.x);
-            }else {
-              isXiaotuicheAnimationDone = true
+            } else {
+              isXiaotuicheAnimationDone = true;
             }
           }
           // 推车室
@@ -191,26 +254,84 @@
         }
         {
           //打开上门，隐藏右门
-          if(isXiaotuicheAnimationDone) {
+          if (isXiaotuicheAnimationDone) {
             animationNegativeRotation(
-            menshang,
-            "rotation",
-            "y",
-            -Math.PI / 2,
-            0.02,
-            function () {
-              isMenShangOpenAnimationDone = true;
-            }
-          );
-          youmen && (youmen.visible = false)
+              menshang,
+              "rotation",
+              "y",
+              -Math.PI / 2,
+              0.02,
+              function () {
+                isMenShangOpenAnimationDone = true;
+              }
+            );
+            youmen && (youmen.visible = false);
           }
         }
         {
           // 推车室进入动画
-          if(isMenShangOpenAnimationDone) {
-            if(tuicheshi.position.x < 140) {
+          if (isMenShangOpenAnimationDone) {
+            if (tuicheshi.position.x < 220) {
               tuicheshi.position.x = tuicheshi.position.x + 5;
+            } else {
+              isAnimationDone4 = true;
             }
+          }
+        }
+        {
+          // 打开挡板展示螺丝刀
+          if (isAnimationDone4) {
+            xiaotuiche.position.x = -800;
+            animationNegativeRotation(
+              menxia,
+              "rotation",
+              "y",
+              -Math.PI / 2,
+              0.02,
+            );
+            if (dangban1.position.y < 10) {
+              // -75
+              // console.log(dangban1.position.y)
+              dangban1.position.y = dangban1.position.y + 0.8;
+            } else {
+              isAnimationDone5 = true;
+            }
+            if (dangban2.position.y > -297) {
+              // -212
+              dangban2.position.y = dangban2.position.y - 0.8;
+            }
+          }
+        }
+        {
+          if (isAnimationDone5) {
+            shoubing.visible = true;
+            if(tuicheshi.position.x < 290) {
+              tuicheshi.position.x = tuicheshi.position.x + 0.5;
+              shoubing.rotation.x  = shoubing.rotation.x + 0.05
+            }else {
+              isAnimationDone6 = true
+            }
+          }
+        }
+        {
+          // 断路器动画
+          if(isAnimationDone6) {
+            // console.log(duanluqi1.position.y)
+            if(duanluqi1.position.y<50) {
+              duanluqi1.position.y = duanluqi1.position.y+1
+              duanluqi2.position.y = duanluqi2.position.y+1
+              duanluqi3.position.y = duanluqi3.position.y+1
+            }else {
+              isAnimationDone7 = true
+            }
+          }
+        }
+        {
+          // 接地刀
+          if(isAnimationDone7) {
+            // console.log(jiedidao)
+            if(jiedidao.rotation.z<Math.PI/2)
+            jiedidao.rotation.z = jiedidao.rotation.z+0.02
           }
         }
 
