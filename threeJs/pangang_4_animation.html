@@ -16,29 +16,25 @@
       import * as THREE from "./file/three.js-dev/build/three.module.js";
       import { OrbitControls } from "./file/three.js-dev/examples/jsm/controls/OrbitControls.js";
       import { FBXLoader } from "./file/three.js-dev/examples/jsm/loaders/FBXLoader.js";
-      
-      import Tween from './tween.js'
-
-      console.log(Tween)
 
 
 
-      let closeJiedidao = document.getElementById('closeJiedidao')
-      let openJiedidao = document.getElementById('openJiedidao')
-      let closeDuanluqi = document.getElementById('closeDuanluqi')
-      let openDuanluqi = document.getElementById('openDuanluqi')
-      closeJiedidao.onclick = ()=>{
-        animation11()
-      }
-      openJiedidao.onclick = ()=>{
-        animation9()
-      }
-      closeDuanluqi.onclick = ()=>{
-        animation10()
-      }
-      openDuanluqi.onclick = ()=>{
-        animation8()
-      }
+      let closeJiedidao = document.getElementById("closeJiedidao");
+      let openJiedidao = document.getElementById("openJiedidao");
+      let closeDuanluqi = document.getElementById("closeDuanluqi");
+      let openDuanluqi = document.getElementById("openDuanluqi");
+      closeJiedidao.onclick = () => {
+        animation11();
+      };
+      openJiedidao.onclick = () => {
+        animation9();
+      };
+      closeDuanluqi.onclick = () => {
+        animation8();
+      };
+      openDuanluqi.onclick = () => {
+        animation10();
+      };
       const canvas = document.querySelector("#c2d");
       // 渲染器
       const renderer = new THREE.WebGLRenderer({ canvas });
@@ -98,17 +94,19 @@
       let dangban1 = null; //挡板1
       let dangban2 = null; // 挡板2
       let shoubing = null; // 手柄
-      let duanluqi1 = null; // 断路器
-      let duanluqi2 = null; // 断路器
-      let duanluqi3 = null; // 断路器
       let jiedidao1 = null; // 接地刀1
       let jiedidao2 = null; // 接地刀2
+      let jiedidaoMask1 = null;
+      let jiedidaoMask2 = null;
+      let duanluqiArr = [];
+      let duanluqi_yuanse = [];
+      let duanluqi_hongse = [];
+      let duanluqi_lvse = [];
 
       const loader = new FBXLoader();
-      loader.load("./file/zhuti0410.fbx", function (mesh) {
-        mesh.position.x = mesh.position.x-400
-        mesh.position.y = mesh.position.y+200
-        console.log("mesh", mesh);
+      loader.load("./file/zhuti0418_2.fbx", function (mesh) {
+        mesh.position.x = mesh.position.x - 400;
+        mesh.position.y = mesh.position.y + 200;
         // 设置模型的每个部位都可以投影
         mesh.traverse(function (child) {
           if (child.isMesh) {
@@ -117,9 +115,10 @@
           }
           if (child.name === "小推车") {
             xiaotuiche = child;
-            xiaotuiche.traverse(function(child){
-                // console.log(child.name,'小推车')
-            })
+            xiaotuiche.traverse(function (child) {
+              if (child.type === "Mesh") {
+              }
+            });
           }
           if (child.name === "门_中") {
             menzhong = child;
@@ -133,16 +132,21 @@
           if (child.name === "推车室") {
             tuicheshi = child;
             child.traverse(function (child) {
-              if (child.name === "断路器01") {
-                
-                duanluqi1 = child;
-                // console.log(duanluqi1,'duanluqi1')
+              if (child.name.indexOf("断路器_零部件") >= 0) {
+                duanluqiArr.push(child);
               }
-              if (child.name === "断路器02") {
-                duanluqi2 = child;
+
+              if (child.name.indexOf("断路器部分_合集_原色") >= 0) {
+                child.visible = true;
+                duanluqi_yuanse.push(child);
               }
-              if (child.name === "断路器03") {
-                duanluqi3 = child;
+              if (child.name.indexOf("断路器部分_合集_红色") >= 0) {
+                child.visible = false;
+                duanluqi_hongse.push(child);
+              }
+              if (child.name.indexOf("断路器部分_合集_绿色") >= 0) {
+                child.visible = false;
+                duanluqi_lvse.push(child);
               }
             });
           }
@@ -157,26 +161,36 @@
             });
           }
           if (child.name === "手柄") {
-            child.traverse(function(child){
-                if(child.type === 'Mesh') {
-                    child.material.color.set(0x000000)
-                }
-            })
+            child.traverse(function (child) {
+              if (child.type === "Mesh") {
+                child.material.color.set(0x000000);
+              }
+            });
             shoubing = child;
           }
           if (child.name === "门_下") {
             menxia = child;
           }
           if (child.name === "接地刀") {
-            child.traverse(function(child){
-                if(child.name === '闸') {
-                    jiedidao1 = child
-                }
-                if(child.name === '闸_中') {
-                    jiedidao2 = child
-                }
-            })
-            
+            child.traverse(function (child) {
+              if (child.name === "闸") {
+                jiedidao1 = child;
+              }
+              if (child.name === "闸_中") {
+                jiedidao2 = child;
+              }
+            });
+          }
+          if (child.name === "接地刀蒙版_红色") {
+            // 红色蒙版
+            jiedidaoMask1 = child;
+            jiedidaoMask1.visible = false;
+            jiedidaoMask1.material.color.set(0xff0000);
+          }
+          if (child.name === "接地刀蒙版_红色_1") {
+            // 绿色蒙版
+            jiedidaoMask2 = child
+            jiedidaoMask2.visible = false
           }
         });
 
@@ -185,131 +199,367 @@
         scene.add(mesh);
         // requestAnimationFrame
         requestAnimationFrame(render);
-        animation()
+        animation();
       });
-     async function animation () {
+      async function animation() {
         // gsap.to(tuicheshi.position,{x:-800,duration:2})
-        // await animation1()
-        // await animation2()
-        // await animation3()
-        // await animation4()
-        // await animation5()
-        // await animation6()
-        // await animation7()
-        // await animation8()
-        // await animation9()
-        function run () {
-            setTimeout(() => {
-                console.log(1)
-                xiaotuiche.position.x = xiaotuiche.position.x-1
-                run()
-            }, 10);
-        }
-        run()
-     }
-      function animation1 () {
-        return new Promise((reslove)=>{
-            // 设置初始化位置
+        await animation1();
+        await animation2();
+        await animation3();
+        await animation4();
+        await animation5();
+        await animation6();
+        await animation7();
+        await animation8();
+        await animation9();
+      }
+      function animation1() {
+        return new Promise((resolve) => {
+          // 设置初始化位置
           setInitStyle(tuicheshi, "position", "x", -800);
           setInitStyle(xiaotuiche, "position", "x", -800);
           shoubing.visible = false;
-          reslove()
-        })
+          resolve();
+        });
       }
-      function animation2 () {
-        return new Promise((reslove)=>{
-            // 门中打开动画
-            gsap.to(menzhong.rotation,{y:-Math.PI/2,duration:1,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-        })
+      function animation2() {
+        return new Promise((resolve) => {
+          // 门中打开动画
+          gsap.to(menzhong.rotation, {
+            y: -Math.PI / 2,
+            duration: 1,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+        });
       }
-      function animation3 () {
-        return new Promise((reslove)=>{
-            // 推车，推车室动画
-            gsap.to(xiaotuiche.position,{x:-145,duration:2,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(tuicheshi.position,{x:-145,duration:2,ease:'power1.inOut'})
-        })
+      function animation3() {
+        return new Promise((resolve) => {
+          // 推车，推车室动画
+          gsap.to(xiaotuiche.position, {
+            x: -145,
+            duration: 2,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          gsap.to(tuicheshi.position, {
+            x: -145,
+            duration: 2,
+            ease: "power1.inOut",
+          });
+        });
       }
-      function animation4 () {
-        return new Promise((reslove)=>{
-            // 打开上门，右门
-            gsap.to(menshang.rotation,{y:-Math.PI/2,duration:1,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            youmen.visible = false
-        })
+      function animation4() {
+        return new Promise((resolve) => {
+          // 打开上门，右门
+          gsap.to(menshang.rotation, {
+            y: -Math.PI / 2,
+            duration: 1,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          youmen.visible = false;
+        });
       }
-      function animation5 () {
-        return new Promise((reslove)=>{
-            // 推车室进入动画
-            gsap.to(tuicheshi.position,{x:200,duration:1.5,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-        })
+      function animation5() {
+        return new Promise((resolve) => {
+          // 推车室进入动画
+          gsap.to(tuicheshi.position, {
+            x: 200,
+            duration: 1.5,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+        });
       }
-      function animation6 () {
-        return new Promise((reslove)=>{
-            // 打开挡板，展示螺丝刀
-            xiaotuiche.position.x = -800;
-            gsap.to(menxia.rotation,{y:-Math.PI/2,duration:1,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(dangban1.position,{y:10,duration:1.5,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(dangban2.position,{y:-297,duration:1.5,ease:'power1.inOut'})
-        })
+      function animation6() {
+        return new Promise((resolve) => {
+          // 打开挡板，展示螺丝刀
+          xiaotuiche.position.x = -800;
+          gsap.to(menxia.rotation, {
+            y: -Math.PI / 2,
+            duration: 1,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          gsap.to(dangban1.position, {
+            y: 10,
+            duration: 1.5,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          gsap.to(dangban2.position, {
+            y: -297,
+            duration: 1.5,
+            ease: "power1.inOut",
+          });
+        });
       }
-      function animation7 () {
-        return new Promise((reslove)=>{
-            // 
-            shoubing.visible = true
-            gsap.to(tuicheshi.position,{x:290,duration:1.5,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(shoubing.rotation,{x:3*Math.PI,duration:1.5,ease:'power1.inOut'})
-        })
+      function animation7() {
+        return new Promise((resolve) => {
+          //
+          shoubing.visible = true;
+          gsap.to(tuicheshi.position, {
+            x: 290,
+            duration: 1.5,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          gsap.to(shoubing.rotation, {
+            x: 3 * Math.PI,
+            duration: 1.5,
+            ease: "power1.inOut",
+          });
+        });
       }
-      function animation8 () {
-        return new Promise((reslove)=>{
-            // 断路器动画（分闸）
-            gsap.to(duanluqi1.position,{y:50,duration:2,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(duanluqi2.position,{y:50,duration:2,ease:'power1.inOut'})
-            gsap.to(duanluqi3.position,{y:50,duration:2,ease:'power1.inOut'})
-        })
+      async function animation8() {
+        return new Promise(async (resolve) => {
+          ///
+          duanluqi_lvse.forEach((item) => {
+            item.visible = false;
+          });
+          // 断路器动画（合闸）
+          for (let i = 0; i < duanluqiArr.length; i++) {
+            gsap.to(duanluqiArr[i].position, {
+              y: 50,
+              duration: 2,
+              ease: "power1.inOut",
+              onComplete: () => {
+                resolve();
+              },
+            });
+          }
+          // 颜色改变
+          for (let i = 0; i < 5; i++) {
+            let timer1 = null;
+            let timer2 = null;
+            await new Promise((resolve) => {
+              duanluqi_hongse.forEach((item) => {
+                gsap.to(item, {
+                  visible: true,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              duanluqi_yuanse.forEach((item) => {
+                gsap.to(item, {
+                  visible: false,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              timer1 = setTimeout(() => {
+                resolve();
+              }, 200);
+            });
+            await new Promise((resolve) => {
+              duanluqi_hongse.forEach((item) => {
+                gsap.to(item, {
+                  visible: false,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              duanluqi_yuanse.forEach((item) => {
+                gsap.to(item, {
+                  visible: true,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              timer2 = setTimeout(() => {
+                resolve();
+              }, 200);
+            });
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+          }
+          duanluqi_hongse.forEach((item) => {
+            item.visible = true;
+          });
+          duanluqi_yuanse.forEach((item) => {
+            item.visible = false;
+          });
+        });
       }
-      function animation9 () {
-        return new Promise((reslove)=>{
-            // 接地刀动画(合闸)
-            gsap.to(jiedidao1.rotation,{z:Math.PI/2,duration:2,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(jiedidao2.rotation,{z:Math.PI/2,duration:2,ease:'power1.inOut'})
-        })
+      function animation9() {
+        return new Promise(async (resolve) => {
+          // 接地刀动画(分闸)
+          jiedidaoMask1.visible = false
+          gsap.to(jiedidao1.rotation, {
+            z: Math.PI / 2,
+            duration: 2,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          gsap.to(jiedidao2.rotation, {
+            z: Math.PI / 2,
+            duration: 2,
+            ease: "power1.inOut",
+          });
+          for(let i=0;i<5;i++) {
+            let timer1 = null
+            let timer2 = null
+            await new Promise((resolve)=>{
+              gsap.to(jiedidaoMask2, {
+                  visible: true,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+                timer1 = setTimeout(() => {
+                  resolve()
+                }, 200);
+            })
+            await new Promise((resolve)=>{
+              gsap.to(jiedidaoMask2, {
+                  visible: false,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+                timer2 = setTimeout(() => {
+                  resolve()
+                }, 200);
+            })
+            clearTimeout(timer1)
+            clearTimeout(timer2)
+          }
+          jiedidaoMask2.visible = true
+
+        });
       }
-      function animation10 () {
-        return new Promise((reslove)=>{
-            // 断路器动画（分闸）
-            gsap.to(duanluqi1.position,{y:25.5,duration:2,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(duanluqi2.position,{y:25.5,duration:2,ease:'power1.inOut'})
-            gsap.to(duanluqi3.position,{y:25.5,duration:2,ease:'power1.inOut'})
-        })
+      function animation10() {
+        return new Promise(async (resolve) => {
+          // 断路器动画（分闸）
+          ////
+          duanluqi_hongse.forEach((item) => {
+            item.visible = false;
+          });
+          // 断路器动画（分闸）
+          for (let i = 0; i < duanluqiArr.length; i++) {
+            gsap.to(duanluqiArr[i].position, {
+              y: 25.5,
+              duration: 2,
+              ease: "power1.inOut",
+              onComplete: () => {
+                resolve();
+              },
+            });
+          }
+          // 颜色改变
+          for (let i = 0; i < 5; i++) {
+            let timer1 = null;
+            let timer2 = null;
+            await new Promise((resolve) => {
+              duanluqi_lvse.forEach((item) => {
+                gsap.to(item, {
+                  visible: true,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              duanluqi_yuanse.forEach((item) => {
+                gsap.to(item, {
+                  visible: false,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              timer1 = setTimeout(() => {
+                resolve();
+              }, 200);
+            });
+            await new Promise((resolve) => {
+              duanluqi_lvse.forEach((item) => {
+                gsap.to(item, {
+                  visible: false,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              duanluqi_yuanse.forEach((item) => {
+                gsap.to(item, {
+                  visible: true,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+              });
+              timer2 = setTimeout(() => {
+                resolve();
+              }, 200);
+            });
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+          }
+          duanluqi_lvse.forEach((item) => {
+            item.visible = true;
+          });
+          duanluqi_yuanse.forEach((item) => {
+            item.visible = false;
+          });
+        });
       }
-      function animation11 () {
-        return new Promise((reslove)=>{
-            // 接地刀动画(分闸)
-            gsap.to(jiedidao1.rotation,{z:0,duration:2,ease:'power1.inOut',onComplete:()=>{
-                reslove()
-            }})
-            gsap.to(jiedidao2.rotation,{z:0,duration:2,ease:'power1.inOut'})
-        })
+      function animation11() {
+        return new Promise(async (resolve) => {
+          // 接地刀动画(分闸)
+          jiedidaoMask2.visible = false
+          gsap.to(jiedidao1.rotation, {
+            z: 0,
+            duration: 2,
+            ease: "power1.inOut",
+            onComplete: () => {
+              resolve();
+            },
+          });
+          gsap.to(jiedidao2.rotation, {
+            z: 0,
+            duration: 2,
+            ease: "power1.inOut",
+          });
+          for(let i=0;i<5;i++) {
+            let timer1 = null
+            let timer2 = null
+            await new Promise((resolve)=>{
+              gsap.to(jiedidaoMask1, {
+                  visible: true,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+                timer1 = setTimeout(() => {
+                  resolve()
+                }, 200);
+            })
+            await new Promise((resolve)=>{
+              gsap.to(jiedidaoMask1, {
+                  visible: false,
+                  duration: 0.1,
+                  ease: "power1.inOut",
+                });
+                timer2 = setTimeout(() => {
+                  resolve()
+                }, 200);
+            })
+            clearTimeout(timer1)
+            clearTimeout(timer2)
+          }
+          jiedidaoMask1.visible = true
+
+        });
       }
       /**
        * 设置两层数据的初始化样式
@@ -331,40 +581,11 @@
           el[key] = value;
         }
       }
-      /**
-       * 旋转动画
-       */
-      
-      function changeJiedidaoColor(jiedidao,color){
-        // let i = 0 
-        // jiedidao.traverse(function(child){
-        //     i++
-        //     console.log(child,'traverse')
-        //     if(child.type === 'Mesh') {
-        //         child.material.color.set(color)
-        //     }
-        // })
-        recursionSetColor(jiedidao.children)
-        function recursionSetColor(children) {
-            
-            children.forEach(function(child){
-                console.log(child.name)
-                if(child.type === 'Mesh') {
-                    child.material.color.set(color)
-                }
-                if(child.children.length>0) {
-                    recursionSetColor(child.children)
-                }
-            })
-        }
-      }
-    
-      function render () {
+
+      function render(time) {
         renderer.render(scene, camera);
         requestAnimationFrame(render);
       }
-
-      
     </script>
   </body>
 </html>
