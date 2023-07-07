@@ -62,6 +62,11 @@
           opacity: 0.3;
         }
       }
+      #fix {
+        position: fixed;
+        width: 200px;
+        height: 200px;
+      }
     </style>
   </head>
   <body>
@@ -72,6 +77,7 @@
       <span></span>
     </div>
     <div id="root"></div>
+    <div id="fix">222222222222222</div>
     <script>
       // const obj = {https://ktlinecorridor.gczhyun.com/applet/Files/2022/10/12/19557403908828674.jpg: "19557403908828675"}
       // const obj = {}
@@ -171,9 +177,42 @@
       // console.log(JSON.parse("{\"adminPowSup\":\"温泉县供电公司\",\"adminPowSupId\":\"1963485d365a8f42487cfbf6235b44aa\",\"assetOwnerPartm\":\"国网新疆电力有限公司克拉玛依供电公司\",\"buidModifPopuse\":\"提升电网安全稳定水平\",\"cityId\":\"FCE288407DEA40509E753605847B0482\",\"cityName\":\"国网新疆电力有限公司博尔塔拉供电公司\",\"designerId\":\"\",\"designerUnitId\":\"\",\"fileIds\":\"1678974699939,1678974699939\",\"modifReason\":\"网架结构不合理\",\"mrid\":\"dc6041e3668901a599b34723d0584dbe\",\"organTime\":\"2023-03-16\",\"organUnit\":\"测试\",\"planYear\":\"2023\",\"prjClassif\":\"迎峰度夏项目\",\"prjLevel\":\"省级项目\",\"prjName\":\"测试\",\"prjNature\":\"城网\",\"proCode\":\"11\",\"proDesigner\":\"\",\"proDesignerUnit\":\"\",\"proIsOpen\":\"1\",\"projectPlan\":\"测试\",\"projectStatus\":\"已委托\",\"regionAttr\":\"A\",\"reviewerId\":\"\",\"reviewerName\":\"undefined\",\"runId\":\"4028804f6a0ca167016a0f4254e70033\",\"runName\":\"王刚\",\"speciClassif\":\"配电架空\",\"submittedBy\":\"地州杜\",\"submittedById\":\"402880486998baf60169a332b08c0331\",\"surveyor\":\"杜志敏\",\"surveyorId\":\"402880486998baf60169a332b08c0331\",\"voltClass\":\"20kV\"}"))
       // console.log(JSON.parse('undefined'), 111)
 
-      console.log('aBcD'.toLocaleLowerCase())
-      let obj = {a:null}
-      console.log(obj.a?.indexOf('222'))
+      // console.log('aBcD'.toLocaleLowerCase())
+      // let obj = {a:null}
+      // console.log(obj.a?.indexOf('222'))
+
+      // let arr = [2,3,1]
+      // console.log(arr.sort((a,b)=>a-b))
+
+      let reg = new RegExp("(?=.*[0-9])(?=.*[a-zA-Z)(?=.*[^a-zA-Z0-9]).{8}");
+
+      console.log(reg.test("sss2$sssss"));
+
+      const getDateDiff = (date1) => {
+        const startDate = new Date(date1);
+
+        const endRDate = new Date();
+
+        const result = (endRDate - startDate) / (24 * 60 * 60 * 1000);
+
+        return result;
+      };
+      getDateDiff("2023-05-20 16:04:35");
+
+      const transformUrlParams = (url, data) => {
+        let newUrl = url + "";
+        Object.keys(data).forEach((key) => {
+          if (newUrl.indexOf('?') !== -1) {
+            newUrl += `&${key}=${data[key]}`;
+          } else {
+            newUrl += `?${key}=${data[key]}`;
+          }
+        });
+        return newUrl;
+      };
+      console.log(transformUrlParams('http:www.baidu.com?sss=22',{id:'111',name:222}))
+
+      console.log('test')
     </script>
   </body>
 </html>
