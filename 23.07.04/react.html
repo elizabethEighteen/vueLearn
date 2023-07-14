@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+        // Good Job   by nite
+      class Dep {
+        constructor() {
+          this.deps = new Set();
+        }
+        depend() {
+          if (Dep.target) {
+            this.deps.add(Dep.target);
+          }
+        }
+        notify() {
+          console.log(this.deps, "deps");
+          for (let item of this.deps) {
+            item.update();
+          }
+        }
+      }
+      Dep.target = null;
+      const targetStack = [];
+      const pushTarget = (_target) => {
+        Dep.target = _target;
+        targetStack.push(_target);
+      };
+      const popTarget = () => {
+        return targetStack.pop();
+      };
+      const reactive = (data) => {
+        for (key in data) {
+          defineReactive(data, key);
+        }
+      };
+      const defineReactive = (data, key) => {
+        let val = data[key];
+        const dep = new Dep();
+        Object.defineProperty(data, key, {
+          set: (value) => {
+            val = value
+            dep.notify();
+          },
+          get: () => {
+            dep.depend();
+            return val;
+          },
+        });
+        if (typeof data[key] === "object") {
+          reactive(data[key]);
+        }
+      };
+      class watcher {
+        constructor(getter) {
+          this.getter = getter;
+          this.get();
+        }
+        get() {
+          console.log(this, "this");
+          pushTarget(this);
+          this.getter();
+          popTarget();
+        }
+        update() {
+          console.log(data.msg, "update");
+          this.get();
+        }
+      }
+
+      let data = {
+        msg: "123",
+      };
+      let obj = reactive(data);
+
+      console.log(data.msg, "msg");
+
+      new watcher(() => (document.getElementById("app").innerHTML = data.msg));
+      setTimeout(() => {
+        data.msg = "222";
+      }, 2000);
+    </script>
+  </body>
+</html>

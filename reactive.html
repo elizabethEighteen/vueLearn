@@ -8,7 +8,7 @@
   </head>
   <body>
     <div id="app"></div>
-    <div id="app1"></div>
+    <!-- <div id="app1"></div> -->
     <script>
       // todo dep
       class Dep {
@@ -58,6 +58,7 @@
         let val = data[key];
         // 收集依赖
         const dep = new Dep();
+        console.log(dep,'dep')
 
         Object.defineProperty(data, key, {
           get() {
@@ -79,7 +80,7 @@
       class Watcher {
         constructor(getter, options = {}) {
           const { computed, watch, callback } = options;
-          this.getter = getter;
+          this.getter = getter; // 更新函数其实调用的就是这个getter
           this.computed = computed;
           this.watch = watch;
           this.callback = callback;
@@ -145,26 +146,27 @@
       }
 
       // todo test1
-      // const data = reactive({
-      //   msg: "Hello World",
-      // });
+      const data = reactive({
+        msg: "Hello World",
+        test:'sss'
+      });
 
-      // new Watcher(() => {
-      //   document.getElementById("app").innerHTML = `msg is ${data.msg}`;
-      // });
+      new Watcher(() => {
+        document.getElementById("app").innerHTML = `msg is ${data.msg}`;
+      });
       // new Watcher(() => {
       //   document.getElementById("app1").innerHTML = `msg iss ${data.msg}`;
       // });
 
-      //   setTimeout(() => {
-      //     data.msg = "222";
-      //   }, 1000);
+        setTimeout(() => {
+          data.msg = "222";
+        }, 1000);
 
       // test 2
 
-      const data = reactive({
-        number: 1,
-      });
+      // const data = reactive({
+      //   number: 1,
+      // });
 
       const numberPlusOne = computed(() => data.number + 1);
 
