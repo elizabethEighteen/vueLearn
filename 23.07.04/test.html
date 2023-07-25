@@ -7,23 +7,22 @@
     <title>Document</title>
   </head>
   <body>
-    <div>222</div>
+    <div id="app">222</div>
 
     <script>
-      // asycn await
+      //    const timer = setTimeout(() => {
+      //     console.log(200)
+      //    }, 200);
 
-      const func = async () => {
-        await new Promise((resolve, reject) => {
-          setTimeout(() => {
-            console.log("time");
-            reject("error");
-          });
-        }, 2000);
-        await 1;
-        console.log(1);
-      };
+      //    console.log(timer)
 
-      func();
+      console.time();
+      setTimeout(() => {
+        console.log(200);
+      }, 200);
+      for (let i = 0; i < 9000000000; i++) {}
+      console.log("2");
+      console.timeEnd();
     </script>
   </body>
 </html>

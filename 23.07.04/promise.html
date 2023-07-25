@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // stage1
+      // function Mypromise (fn) {
+      //     this.status = 'pending'
+      //     this.resolveArr = []
+      //     this.rejectArr = []
+      //     this.data = null
+      //     this.resolve = (data)=>{
+      //         this.data = data
+      //         this.status = 'resolve'
+      //         this.resolveArr.forEach(item=>item(this.data))
+      //     }
+      //     this.reject = (err) =>{
+      //         this.data = err
+      //         this.status =  'reject'
+
+      //         this.rejectArr.forEach(item=>item(this.data))
+      //     }
+      //     fn(this.resolve,this.reject)
+      // }
+
+      // Mypromise.prototype.then = function (resolve,reject) {
+
+      //     this.resolveArr.push(resolve)
+      //     this.rejectArr.push(reject)
+      // }
+
+      // new Mypromise((resolve,reject)=>{
+      //     setTimeout(() => {
+      //         resolve('20')
+      //     }, 2000);
+      // }).then((data)=>{
+      //     console.log(data)
+      // })
+
+      // stage2
+      function Mypromise(fn) {
+        console.log(this,'promise')
+        this.status = "pending";
+        this.resolveArr = [];
+        this.rejectArr = [];
+        this.data = null;
+        this.resolve = (data) => {
+          this.data = data;
+          this.status = "resolve";
+          this.resolveArr.forEach((item) => item(this.data));
+        };
+        this.reject = (err) => {
+          this.data = err;
+          this.status = "reject";
+
+          this.rejectArr.forEach((item) => item(this.data));
+        };
+        fn(this.resolve, this.reject);
+      }
+
+      Mypromise.prototype.then = function (resolve, reject) {
+        return new Mypromise((res, rej) => {
+          this.resolveArr.push(() => {
+            let res1 = resolve(this.data);
+            if (res1 instanceof Mypromise) {
+              res1.then(res)
+            }else {
+                res(this.data)
+            }
+          });
+          this.rejectArr.push(reject)
+        });
+
+      };
+
+      new Mypromise((resolve, reject) => {
+        setTimeout(() => {
+          resolve("20");
+        }, 2000);
+      })
+        .then((data) => {
+          console.log(data);
+          return new Mypromise((resolve) => {
+            setTimeout(() => {
+              resolve("30");
+            }, 1000);
+          });
+        })
+        .then((data) => {
+            console.log(data);
+          return new Mypromise((resolve) => {
+            setTimeout(() => {
+              resolve("40");
+            }, 1000);
+          });
+          
+        }).then((data)=>{
+            console.log(data);
+        }).then((data)=>{
+            console.log(data)
+        })
+    </script>
+  </body>
+</html>

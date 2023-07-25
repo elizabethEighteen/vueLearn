@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">222</div>
+
+    <script>
+
+
+      // 每次点击按钮，就有一部分内存无法回收，因为被外部 arr 持有了
+
+      let startBtn = document.getElementById("app");
+      var arr = [];
+      startBtn.addEventListener("click", function () {
+        for (let i = 0; i < 20000; i++) {
+          var a = new Array(100000).fill(1);
+          var b = new Array(20000).fill(1);
+          arr.push(b);
+        }
+      });
+
+      //   var t = null;
+      //   var replaceThing = function () {
+      //     var o = t;
+      //     var unused = function () {
+      //       if (o) {
+      //         console.log("hi");
+      //       }
+      //     };
+
+      //     t = {
+      //       longStr: new Array(100000).fill("*"),
+      //       someMethod: function () {
+      //         console.log(1);
+      //       },
+      //     };
+      //   };
+      //   setInterval(replaceThing, 1000);
+    </script>
+  </body>
+</html>
