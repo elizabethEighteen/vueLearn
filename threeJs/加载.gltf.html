@@ -57,44 +57,44 @@
       let zuiti = null
       {
         const gltfLoader = new GLTFLoader();
-        gltfLoader.load("./file/blue.glb", (gltf) => {
+        gltfLoader.load("./file/3.glb", (gltf) => {
           const wawa = gltf.scene;
           // 遍历所有子对象
-          wawa.traverse((child) => {
-            if (child.isMesh) {
-              // 内部
+          // wawa.traverse((child) => {
+          //   if (child.isMesh) {
+          //     // 内部
               
-              console.log(child)
-              if(child.name === '锥体') {
-                zuiti = child
-                child.material.metalness = 0.5;
-                // 粗糙度
-                child.material.roughness = 0.8;
-                child.material.color.set(0x00ffff);
-              }
-              if (child.name === "oldtiger001") {
-                // 金属度
-                child.material.metalness = 0.5;
-                // 粗糙度
-                child.material.roughness = 0.8;
-                child.material.color.set(0x00ffff);
-              }
-              // 半透明外壳
-              if (child.name === "oldtiger002") {
-                // 启用透明
-                child.material.transparent = true;
-                // 透明度
-                child.material.opacity = 0.5;
-                // 透明反射效果
-                child.material.refractionRatio = 1;
-                child.material.metalness = 0.2;
-                child.material.roughness = 0;
-                child.material.color.set(0xff00ff);
-              }
-            }
-          });
+          //     console.log(child)
+          //     if(child.name === '锥体') {
+          //       zuiti = child
+          //       child.material.metalness = 0.5;
+          //       // 粗糙度
+          //       child.material.roughness = 0.8;
+          //       child.material.color.set(0x00ffff);
+          //     }
+          //     if (child.name === "oldtiger001") {
+          //       // 金属度
+          //       child.material.metalness = 0.5;
+          //       // 粗糙度
+          //       child.material.roughness = 0.8;
+          //       child.material.color.set(0x00ffff);
+          //     }
+          //     // 半透明外壳
+          //     if (child.name === "oldtiger002") {
+          //       // 启用透明
+          //       child.material.transparent = true;
+          //       // 透明度
+          //       child.material.opacity = 0.5;
+          //       // 透明反射效果
+          //       child.material.refractionRatio = 1;
+          //       child.material.metalness = 0.2;
+          //       child.material.roughness = 0;
+          //       child.material.color.set(0xff00ff);
+          //     }
+          //   }
+          // });
           scene.add(wawa);
-          animation(wawa);
+          // animation(wawa);
           renderer.render(scene, camera);
         });
       }
@@ -103,9 +103,9 @@
       function render() {
         // console.log(1111)
         renderer.render(scene, camera);
-        if(zuiti && zuiti.position) {
-          zuiti.position.x = zuiti.position.x-0.02
-        }
+        // if(zuiti && zuiti.position) {
+        //   zuiti.position.x = zuiti.position.x-0.02
+        // }
         requestAnimationFrame(render);
       }
 

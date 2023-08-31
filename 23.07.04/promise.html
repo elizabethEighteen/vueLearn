@@ -44,7 +44,7 @@
 
       // stage2
       function Mypromise(fn) {
-        console.log(this,'promise')
+        console.log(this, "promise");
         this.status = "pending";
         this.resolveArr = [];
         this.rejectArr = [];
@@ -68,14 +68,13 @@
           this.resolveArr.push(() => {
             let res1 = resolve(this.data);
             if (res1 instanceof Mypromise) {
-              res1.then(res)
-            }else {
-                res(this.data)
+              res1.then(res);
+            } else {
+              res(this.data);
             }
           });
-          this.rejectArr.push(reject)
+          this.rejectArr.push(reject);
         });
-
       };
 
       new Mypromise((resolve, reject) => {
@@ -92,18 +91,26 @@
           });
         })
         .then((data) => {
-            console.log(data);
+          console.log(data);
           return new Mypromise((resolve) => {
             setTimeout(() => {
               resolve("40");
             }, 1000);
           });
-          
-        }).then((data)=>{
-            console.log(data);
-        }).then((data)=>{
-            console.log(data)
         })
+        .then((data) => {
+          console.log(data);
+        })
+        .then((data) => {
+          console.log(data);
+        });
+
+      new Promise(function (resolve) {
+        console.log("7");
+        //   resolve()
+      }).then(function () {
+        console.log("8");
+      });
     </script>
   </body>
 </html>

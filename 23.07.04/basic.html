@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+        #one {
+            background-color: red;
+            width: 200px;
+            height: 200px;
+
+        }
+        #two {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+    </style>
+  </head>
+  <body>
+
+    <div id="one">
+        <div id="two"></div>
+    </div>
+    <script>
+      // wrong answer
+      //   function test(person) {
+      //     person.age = 26;
+      //     person = {
+      //       name: "hzj",
+      //       age: 18,
+      //     };
+      //     console.log(person,'sssss')
+      //     return person;
+      //   }
+      //   const p1 = {
+      //     name: "fyq",
+      //     age: 19,
+      //   };
+      //   const p2 = test(p1);
+      //   console.log(p1); // -> ?
+      //   console.log(p2); // -> ?
+
+      console.log(1 / +0 === 1 / -0);
+
+      console.log(Object.is(+0, -0));
+      console.log(+0 === -0);
+
+      // 如果为真，要换位置
+      console.log(
+        [4, 2, 3].sort((a, b) => {
+          return a - b;
+        })
+      );
+
+      Function.prototype.call1 = function (context, ...args) {
+        let context1 = context || window;
+        let fn = Symbol("fn");
+        context1.fn = this;
+
+        let result = eval("context1.fn(...args)");
+
+        delete context1.fn;
+        return result;
+      };
+
+      let fn = function () {
+        console.log(this.a)
+      }
+      fn.call1({a:1})
+    </script>
+  </body>
+</html>
